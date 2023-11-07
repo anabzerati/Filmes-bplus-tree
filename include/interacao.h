@@ -17,9 +17,6 @@ void insercao();
 /* Lê dados para a busca, chama a função para realizar a busca binária e, por fim, caso seja encontrado um filme, lê seus dados do arquivo de dados e imprime na tela. Caso não encontre, imrpime mensagem de erro*/
 void busca();
 
-/* Lê informações do filme a ser removido, realiza a busca e, caso o encontre, o remove do arquivo de dados e dos índices. Verifica sucesso e imprime uma mensagem na tela*/
-void remocao();
-
 /* Lê dados necessários e edita nota de um filme, no arquivo de dados, a partir de sua chave primária. Verifica sucesso e imprime uma mensagem na tela*/
 void editarNota();
 

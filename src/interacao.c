@@ -2,7 +2,6 @@
 
 #include "../include/interacao.h"
 
-extern  IndicePrimario *vetorPrimario;
 extern IndiceSecundario *vetorTitulos;
 extern int numeroFilmes;
 
@@ -90,7 +89,7 @@ void insercao(){
     }
 }
 
-/* Lê dados para a busca, chama a função para realizar a busca binária e, por fim, caso seja encontrado um filme, lê seus dados do arquivo de dados e imprime na tela. Caso não encontre, imrpime mensagem de erro*/
+/* Lê dados para a busca, chama a função para realizar a busca binária e, por fim, caso seja encontrado um filme, lê seus dados do arquivo de dados e imprime na tela. Caso não encontre, imrpime mensagem de erro
 void busca(){
     int op;
     char tituloaux[MAX_NOME + 1];
@@ -145,62 +144,7 @@ void busca(){
 
 }
 
-/* Lê informações do filme a ser removido, realiza a busca e, caso o encontre, o remove do arquivo de dados e dos índices. Verifica sucesso e imprime uma mensagem na tela*/
-void remocao(){
-    char idaux[TAM_CHAVE + 1];
-
-    printf("\n*REMOÇÃO*\n");
-    printf("ID: ");
-    scanf("%s", idaux);
-
-    int auxIndice = buscaPrimaria(idaux, 0, numeroFilmes); //busca filme
-
-    if(auxIndice == -1){ //não encontrou
-        printf("Não foi encontrado o filme de ID %s\n", idaux);
-
-        return;
-    }
-    
-    //remover filme do arquivo de dados
-    char titulo[MAX_NOME + 1];
-    int flag = removeRegistro(auxIndice, titulo);
-
-    if(flag == 0){
-        printf("Não foi possível realizar a remoção.");
-        return;
-    }
-
-    printf("titulo do removido %s", titulo);
-
-    //remover filme do índice primário em RAM
-    flag = removePosicaoPrimario(auxIndice);
-
-    if(flag == 0){
-        printf("Não foi possível realizar a remoção.");
-        return;
-    }
-
-    //remover filme do índice secundário em RAM
-    int primeiro = 0, ultimo = numeroFilmes - 1, real;
-    buscaSecundaria(titulo, &primeiro, &ultimo); //recupera todos os filmes com esse mesmo título
-
-    for(int i = primeiro; i <= ultimo; i ++){
-        if(strcmp(vetorTitulos[i].chavePrimaria, idaux) == 0){ //encontra a posição real do filme com o ID desejado
-            real = i;
-        }
-    }
-
-    flag = removePosicaoSecundario(real); //remove do vetor de índice secunário o índice equivalente ao filme desejado
-
-    if(flag == 0){
-        printf("Não foi possível realizar a remoção.");
-        return;
-    }
-
-    numeroFilmes--; //atualiza quantidade real de filmes
-}
-
-/* Lê dados necessários e edita nota de um filme, no arquivo de dados, a partir de sua chave primária*/
+/* Lê dados necessários e edita nota de um filme, no arquivo de dados, a partir de sua chave primária
 void editarNota(){
     char idaux[TAM_CHAVE + 1], novaNota;
 
@@ -228,7 +172,7 @@ void editarNota(){
 
 }
 
-/* Percorre todo o arquivo de dados (seguindo a ordem alfabética de diretores), lendo o registro para RAM e imprimindo na tela suas informações*/
+/* Percorre todo o arquivo de dados (seguindo a ordem alfabética de diretores), lendo o registro para RAM e imprimindo na tela suas informações
 void listarFilmes(){
     int i;
 
@@ -242,3 +186,4 @@ void listarFilmes(){
 
     fclose(dadosp);
 }
+*/

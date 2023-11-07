@@ -3,20 +3,14 @@
 #include "../include/interacao.h"
 
 /* variáveis globais */
-IndicePrimario *vetorPrimario = NULL; //índice primário em RAM
 IndiceSecundario *vetorTitulos = NULL; //índice secundário em RAM
 int numeroFilmes = 0; //quantidade de registros dos índices
 
 int main(){
     int i;
-    Arquivos ponteirosArquivos;
-   
-    ponteirosArquivos = abreArquivos();
-    vetorPrimario = carregaPrimario(ponteirosArquivos.dadosP, ponteirosArquivos.primarioP); //carrega vetor com dados de índice primário
-    vetorTitulos = carregaSecundario(ponteirosArquivos.dadosP, ponteirosArquivos.secundarioP); //carrega vetor com dados do índice secundário de título
-    fclose(ponteirosArquivos.dadosP);
-    
 
+    vetorTitulos = carregaSecundario(); //carrega vetor com dados do índice secundário de título
+    
     int op = 1;
     while(op){
         printf("\n*MENU DE OPÇÕES*\n");
@@ -28,9 +22,9 @@ int main(){
             insercao();
             break;
 
-        case 2: //remover filme
-            remocao(&ponteirosArquivos);
-            break;
+        //case 2: //remover filme
+        //    remocao(&ponteirosArquivos);
+        //    break;
 
         case 3: //buscar filme por chave primária
             busca();
@@ -44,9 +38,9 @@ int main(){
             listarFilmes();
             break;
 
-        case 6: //compactar arquivo de dados
-            compactarDados();
-            break;
+        //case 6: //compactar arquivo de dados
+        //    compactarDados();
+        //    break;
 
         case 0: //sair
             sair();

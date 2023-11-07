@@ -2,82 +2,16 @@
 
 #include "../include/arquivos.h"
 
-extern  IndicePrimario *vetorPrimario;
 extern IndiceSecundario *vetorTitulos;
 extern int numeroFilmes;
 
-/* Função que abre os arquivos de dados e índices */
-Arquivos abreArquivos(){
-    FILE *fp;
-    Arquivos aux;
-
-    if(verificaDados()){ //existe arquivo de dados
-        fp = fopen(NOME_ARQ_DADOS, "r+"); //abre pra leitura
-    } else{
-        fp = fopen(NOME_ARQ_DADOS, "w+"); //cria para escrita
-    }
-    aux.dadosP = fp;
-
-    if(verificaPrimario()){ //existe índice primário
-        fp = fopen(NOME_INDICE_PRIMARIO, "r+"); //abre pra leitura
-    } else{
-        fp = fopen(NOME_INDICE_PRIMARIO, "w+"); //cria para escrita
-    }
-    aux.primarioP = fp;
-
-    if(verificaSecundario()){ //existe índice secundário
-        fp = fopen(NOME_INDICE_TITULO, "r+"); //abre pra leitura
-    } else{
-        fp = fopen(NOME_INDICE_TITULO, "w+"); //cria para escrita
-    }
-    aux.secundarioP = fp;
-
-    return aux;
-}
-
-/* Carrega índice primário do disco para RAM, retorna vetor de índices ordenado*/
-IndicePrimario *carregaPrimario(FILE *dadosp, FILE *fp){
-    int  i;
-    int flag = -1;
-
-    /*leitura do header*/
-    fscanf(fp, "%d", &flag); //flag de consistência
-
-    if(flag == -1){ //arquivo vazio
-        numeroFilmes = 0;
-
-        fprintf(fp, "%d %d", 0, 0); //flag e número de registros
-
-        return NULL;
-    }
-
-    if(flag == 0){ //arquivo de índices não atualizado
-        criaPrimario(dadosp, fp); //função que reescreverá o arquivo baseando-se no arquivio de dados
-    }
-
-    rewind(fp);
-    fscanf(fp, "%d %d\n", &flag, &numeroFilmes); //dados do header
-
-    vetorPrimario = malloc((numeroFilmes) * sizeof(IndicePrimario)); //aloca vetor do índice primário
-
-    for(i = 0; i < numeroFilmes; i ++){ //para todos os registros
-        //lê chave primária e RRN e carrega em uma struct
-        fscanf(fp, "%s %ld", vetorPrimario[i].chavePrimaria, &vetorPrimario[i].RRN);
-    }
-
-    rewind(fp);
-    fprintf(fp, "%d", 0); //flag = 0
-    fclose(fp);
-    
-    ordenaPrimario(numeroFilmes);
-
-    return vetorPrimario;
-}
-
 /* Carrega índice secunsário do disco para RAM, retorna vetor de índices ordenado*/
-IndiceSecundario *carregaSecundario(FILE *dadosp, FILE *fp){
+IndiceSecundario *carregaSecundario(){
     char bufferNom[MAX_NOME + 1];
     int i = 0, flag;
+
+    FILE *dadosp = fopen(NOME_ARQ_DADOS, "r+");
+    FILE *fp = fopen(NOME_INDICE_TITULO, "r+");
 
     if(numeroFilmes == 0){
         return NULL;
@@ -116,39 +50,6 @@ IndiceSecundario *carregaSecundario(FILE *dadosp, FILE *fp){
     return vetorTitulos;
 }
 
-/* Refaz indice primário a partir do arquivo de dados*/
-void criaPrimario(FILE *dadosp, FILE *primariop){
-    int count = 0; //registros não apagados
-
-    fseek(dadosp, 0, SEEK_END);
-    long int size = ftell(dadosp) / TAM_REGISTRO; //quantidade total de registros
-
-    rewind(dadosp);
-    rewind(primariop);
-
-    fprintf(primariop, "%d %d \n", 0, 0); //header - flag e quantidade
-
-    for (int i = 0; i < size; i++){
-        //fseek(dadosp, SEEK_SET, TAM_REGISTRO *i); //posiciona ponteiro
-
-        char linha[TAM_REGISTRO + 1];
-        fgets(linha, TAM_REGISTRO + 1, dadosp); //lê linha
-        
-        if(linha[0] == '*') // significa que é apagada
-        {
-            continue;
-        }
-
-        char *token = strtok(linha, "@"); //pega primeiro campo
-        fprintf(primariop, "%s %ld ", token, TAM_REGISTRO * i); //imprime no índice o ID e o RRN = tamahho * registro que está
-
-        count++; //só incrementa se não for um registro excluído
-    }
-
-    fseek(primariop, 0, SEEK_SET); //volta ponteiro para início para escrever header
-    fprintf(primariop, "%d %d\n", 1, count); // flag de atualização e quantidade de registros
-}
-
 /* Refaz indice secundário a partir do arquivo de dados*/
 void criaSecundario(FILE *dadosp, FILE *secundariop){
     fseek(dadosp, 0, SEEK_END);
@@ -160,8 +61,6 @@ void criaSecundario(FILE *dadosp, FILE *secundariop){
     fprintf(secundariop, "%d\n", 0); //flag
 
     for (int i = 0; i < size; i++){
-        //fseek(dadosp, SEEK_SET, TAM_REGISTRO *i); //posiciona ponteiro
-
         char linha[TAM_REGISTRO + 1];
         fgets(linha, TAM_REGISTRO + 1, dadosp); //lê linha
         
@@ -180,93 +79,14 @@ void criaSecundario(FILE *dadosp, FILE *secundariop){
             }
         }
     }
-
-    //fseek(secundariop, 0, SEEK_SET); //volta ponteir para início para escrever header
-    //fprintf(secundariop, "%d\n", 1); // flag de atualização
-
-    //fseek(dadosp, 0, SEEK_SET); //volta ponteiro para a primeira posição
 }
 
 /* Insere registro no arquivo de dados e nos vetores de índices. Retorna 1 se a operação teve sucesso e 0 caso não*/
 int insereRegistro(Filme *novo){
-    char buffer[TAM_REGISTRO + 1];
-    long int auxRRN;
-
-    FILE *dadosp = fopen(NOME_ARQ_DADOS, "a+");
-
-    // "concatenar" várias strings de uma vez - formatar string com @ entre os campos
-    sprintf(buffer,"%s@%s@%s@%s@%s@%s@%c@", novo->chavePrimaria, novo->tituloOriginal, novo->tituloPortugues, novo->diretor, novo->anoLancamento, novo->pais, novo->nota);
-    
-    // preencher o resto do registro com '#'
-    memset(buffer + strlen(buffer), '#', TAM_REGISTRO - strlen(buffer));
-    buffer[TAM_REGISTRO] = '\0';
-
-    // escrever registro no arquivo de dados
-    fputs(buffer, dadosp);
-
-    //calcular RRN do registro inserido com base na posição do ponteiro do arquivo e o tamanho fixo de cada registro
-    auxRRN = ftell(dadosp) - TAM_REGISTRO;
-
-    // após inserir o registro no arquivo de dados, é necessário adicioná-lo aos arquivos de índices
-    numeroFilmes++;
-    IndicePrimario * novoVetorPrimario = realloc(vetorPrimario, numeroFilmes * sizeof(IndicePrimario)); //realocando vetor de índices
-
-    if(!novoVetorPrimario){ //verificando se a memória foi realocada
-        printf("Erro ao alocar memória");
-        
-        return 0;
-    }
-
-    vetorPrimario = novoVetorPrimario;
-
-    strcpy(vetorPrimario[numeroFilmes - 1].chavePrimaria, novo->chavePrimaria);
-    vetorPrimario[numeroFilmes - 1].RRN = auxRRN;
-
-    ordenaPrimario(); //reordena vetor
-
-    //agora, deve-se inserir ao índice secundário
-    IndiceSecundario * novovetorTitulos = realloc(vetorTitulos, numeroFilmes * sizeof(IndiceSecundario)); //realocando vetor de títulos
-
-    if(!novovetorTitulos){ //verificando se a memória foi realocada
-        printf("Erro ao alocar memória");
-        
-        return 0;
-    }
-
-    vetorTitulos = novovetorTitulos;
-
-    strcpy(vetorTitulos[numeroFilmes - 1].titulo, novo->tituloOriginal);
-    strcpy(vetorTitulos[numeroFilmes - 1].chavePrimaria, novo->chavePrimaria);
-
-    ordenaSecundario(); //reordena vetor
-
-    fclose(dadosp);
-    
-    return 1; 
+    //TODO inserir árvore
 }
 
-/* Remove registro do arquivo de índices e adiciona flag de exclusão no de dados. Retorna 1 se a operação teve sucesso e 0 caso não*/
-int removeRegistro(int pos, char *titulo){
-    FILE *dadosP = fopen(NOME_ARQ_DADOS, "r+");
-
-    if(!dadosP){ //erro ao abrir arquivo
-        printf("Erro ao abrir o arquivo para remoção");
-
-        return 0;
-    }
-
-    fseek(dadosP, vetorPrimario[pos].RRN, SEEK_SET); //posiciona o ponteiro no registro do filme
-    fputs("*|", dadosP); //marca filme como removido
-
-    fseek(dadosP, 4, SEEK_CUR); //posiciona ponteiro para ler título
-    fscanf(dadosP, "%[^@]s", titulo);
-
-    fclose(dadosP);
-
-    return 1;
-}
-
-/* Altera registro no arquivo de dados. Retorna 1 se a operação teve sucesso e 0 caso não*/
+/* Altera registro no arquivo de dados. Retorna 1 se a operação teve sucesso e 0 caso não
 int alteraRegistro(char novaNota, char *idFilme){
     FILE *dadosp = fopen(NOME_ARQ_DADOS, "r+");
 
@@ -301,25 +121,7 @@ int alteraRegistro(char novaNota, char *idFilme){
     return 1;
 }
 
-/* Ordena o vetor de índices primários considerando a chave primária. Insertion Sort*/
-void ordenaPrimario(){
-    int i, j;
-    IndicePrimario aux;
-
-    for(i = 1; i < numeroFilmes; i ++){
-        aux = vetorPrimario[i];
-        j = i - 1;
-
-        while( j >= 0 && strcmp(vetorPrimario[j].chavePrimaria, aux.chavePrimaria) > 0){ //utiliza chave primária para ordenar
-            vetorPrimario[j + 1] = vetorPrimario[j];
-            j --;
-        }
-
-        vetorPrimario[j + 1] = aux;
-    }
-}
-
-/* Ordena o vetor de índices secundários considerando o título. Insertion Sort*/
+/* Ordena o vetor de índices secundários considerando o título. Insertion Sort
 void ordenaSecundario(){
     int i, j;
     IndiceSecundario aux;
@@ -337,7 +139,7 @@ void ordenaSecundario(){
     }
 }
 
-/* Busca filme pelo índice primário e retorna sua posição no vetor. Caso não haja registro com esse ID, retorna -1. Busca binária*/
+/* Busca filme pelo índice primário e retorna sua posição no vetor. Caso não haja registro com esse ID, retorna -1. Busca binária
 int buscaPrimaria(char *chavePrimaria, int i, int j){
     int mid = (i + j) / 2;
     int val = strcmp(vetorPrimario[mid].chavePrimaria, chavePrimaria);
@@ -355,7 +157,7 @@ int buscaPrimaria(char *chavePrimaria, int i, int j){
     }
 }
 
-/* Busca filme pelo índice secundário a partir do título e retorna os indices da primeira e útlima aparição dessa chave secundária. Caso não haja registro com esse ID, retorna -1 em j*/
+/* Busca filme pelo índice secundário a partir do título e retorna os indices da primeira e útlima aparição dessa chave secundária. Caso não haja registro com esse ID, retorna -1 em j
 void buscaSecundaria(char *titulo, int *i, int *j){
     int mid, val;
 
@@ -389,7 +191,7 @@ void buscaSecundaria(char *titulo, int *i, int *j){
     
 }
 
-/* Atualiza dados dos índices da RAM para o disco. Atualiza flag da header*/
+/* Atualiza dados dos índices da RAM para o disco. Atualiza flag da header
 void atualizaIndices(){
     int i;
 
@@ -414,46 +216,11 @@ void atualizaIndices(){
     fclose(secundario);
 }
 
-/* Chama função de atualizar índices e libera as memórias alocadas*/
+/* Chama função de atualizar índices e libera as memórias alocadas
 void sair(){
     atualizaIndices();
 
     free(vetorPrimario);
     free(vetorTitulos);
 }
-
-/* Função para compactar arquivo de dados, removendo fisicamente os registros excluidos (logicamente)*/
-void compactarDados(){
-    int i;
-
-    FILE *dadosp = fopen(NOME_ARQ_DADOS, "r+");
-    FILE *aux = fopen("data/auxiliar.tmp", "w");
-
-    //percorrer registros imprimindo-os no arquivo auxiliar
-    for(i = 0; i < numeroFilmes; i ++){
-        fseek(dadosp, vetorPrimario[i].RRN, SEEK_SET); //posiciona ponteiro
-
-        char linha[TAM_REGISTRO + 1];
-        fgets(linha, TAM_REGISTRO + 1, dadosp); //lê registro
-
-        fputs(linha, aux);
-        vetorPrimario[i].RRN = TAM_REGISTRO * i;
-    }
-
-    fclose(aux);
-    fclose(dadosp);
-    aux = dadosp = NULL;
-
-    if (remove(NOME_ARQ_DADOS) == 0) {
-        printf("Arquivo excluído com sucesso.\n");
-    } else {
-        perror("Erro ao excluir o arquivo");
-    }
-
-    if(rename("data/auxiliar.tmp", NOME_ARQ_DADOS) == 0){
-        printf("Arquivo modificado com sucesso.\n");
-    } else {
-        perror("Erro ao renomear o arquivo");
-    }
-    
-}
+*/

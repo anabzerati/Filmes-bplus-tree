@@ -18,18 +18,6 @@ int verificaDados(){
     return 1;
 }
 
-/* Função que verifica se o índice primário existe. Retorna 0 se não existir e 1 se existir*/
-int verificaPrimario(){
-    FILE *fp;
-
-    if((fp = fopen(NOME_INDICE_PRIMARIO, "r+")) == NULL){ //não existe arquivo;
-        return 0;
-    }
-
-    free(fp);
-    return 1;
-}
-
 /* Função que verifica se o índice secundário existe. Retorna 0 se não existir e 1 se existir*/
 int verificaSecundario(){
     FILE *fp;
@@ -42,6 +30,7 @@ int verificaSecundario(){
     return 1;
 }
 
+// TODO ler nó/página
 /* A partir do índice primário, lê os dados do filme correspondente e retorna uma struct preenchida com as informações*/
 Filme *leFilmeIndicePrimario(int pos){
     char buffer[TAM_REGISTRO + 1];
@@ -60,27 +49,6 @@ Filme *leFilmeIndicePrimario(int pos){
     fclose(dadosp);
 
     return auxF;
-}
-
-/* Remove posição do vetor de índice primário a partir de sua posição, readequando os demais elementos. Retorna 1 se a operação teve sucesso e 0 caso não*/
-int removePosicaoPrimario(int pos){
-    int i;
-
-    for(i = pos; i < numeroFilmes - 1; i ++){ //readequa posições do vetor a partir do elemento a ser removido
-        vetorPrimario[i] = vetorPrimario[i+1];
-    }
-
-    IndicePrimario *novoVetorPrimario = realloc(vetorPrimario, (numeroFilmes - 1) * sizeof(IndicePrimario)); //realoca vetor
-
-    if(!novoVetorPrimario){
-        printf("erro no realloc");
-
-        return 0;
-    }
-    
-    vetorPrimario = novoVetorPrimario;
-
-    return 1;
 }
 
 /* Remove posição do vetor de índice secundário a partir de sua posição, readequando as posições dos demais elementos. Retorna 1 se a operação teve sucesso e 0 caso não*/
