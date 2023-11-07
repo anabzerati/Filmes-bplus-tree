@@ -3,7 +3,9 @@
 #define INTERACAO_H
 
 #include "structs.h"
-#include "arquivos.h"
+#include "datafile-manipulation.h"
+#include "secondaryindex-manipulation.h"
+#include "bplus-tree-manipulation.h"
 
 /* Lê dados do filme inseridos pelo usuário e retorna uma struct preenchida */
 Filme *leDadosFilme();

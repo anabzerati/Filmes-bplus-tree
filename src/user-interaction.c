@@ -1,6 +1,6 @@
 /* Implementação das funções definidas na biblioteca */
 
-#include "../include/interacao.h"
+#include "../include/user-interaction.h"
 
 extern IndiceSecundario *vetorTitulos;
 extern int numeroFilmes;

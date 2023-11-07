@@ -1,6 +1,6 @@
 /* Implementação das funções definidas na biblioteca */
 
-#include "../include/arquivos.h"
+#include "../include/secondaryindex-manipulation.h"
 
 extern IndiceSecundario *vetorTitulos;
 extern int numeroFilmes;
@@ -13,20 +13,22 @@ IndiceSecundario *carregaSecundario(){
     FILE *dadosp = fopen(NOME_ARQ_DADOS, "r+");
     FILE *fp = fopen(NOME_INDICE_TITULO, "r+");
 
-    if(numeroFilmes == 0){
-        return NULL;
-    }
-
     //leitura do header
-    fscanf(fp, "%d", &flag);
+    fscanf(fp, "%d", &flag); //flag de consistência
 
-    if(flag == 0){ //inconsistência entre índice e arquivo de dados
+    if(flag == -1){ //arquivo vazio
+        numeroFilmes = 0;
+
+        fprintf(fp, "%d %d", 0, 0); //flag e número de registros
+
+        return NULL;
+    } else if(flag == 0){ //inconsistência entre índice e arquivo de dados
         criaSecundario(dadosp, fp);
     }
 
     rewind(fp);
-    fscanf(fp, "%d\n", &flag); //dado do header
-    
+    fscanf(fp, "%d %d\n", &flag, &numeroFilmes); //dados do header
+
     vetorTitulos = malloc(numeroFilmes * sizeof(IndiceSecundario)); //aloca vetor do índice secundário
 
     for(i = 0; i < numeroFilmes; i ++){ //para cada registro
@@ -42,7 +44,7 @@ IndiceSecundario *carregaSecundario(){
     ordenaSecundario(numeroFilmes);
 
     rewind(fp);
-    fprintf(fp, "%d", 0);
+    fprintf(fp, "%d", 0); //flag = 0
 
     fclose(fp);
     fclose(dadosp);
@@ -58,14 +60,13 @@ void criaSecundario(FILE *dadosp, FILE *secundariop){
     rewind(dadosp);
     rewind(secundariop);
 
-    fprintf(secundariop, "%d\n", 0); //flag
+    fprintf(secundariop, "%d %d\n", 0, numeroFilmes); //flag
 
     for (int i = 0; i < size; i++){
         char linha[TAM_REGISTRO + 1];
         fgets(linha, TAM_REGISTRO + 1, dadosp); //lê linha
         
-        if(linha[0] == '*') // significa que é apagada
-        {
+        if(linha[0] == '*'){ // significa que é apagada
             continue;
         }
 
@@ -74,51 +75,10 @@ void criaSecundario(FILE *dadosp, FILE *secundariop){
         if (tokenChave != NULL) {
             char *tokenTitulo = strtok(NULL, "@"); // pega o segundo campo
             if (tokenTitulo != NULL) {
-                printf("Chave e título lidos %s %s\n", tokenChave, tokenTitulo);
                 fprintf(secundariop, "%s@%s\n", tokenTitulo, tokenChave); // imprime campos
             }
         }
     }
-}
-
-/* Insere registro no arquivo de dados e nos vetores de índices. Retorna 1 se a operação teve sucesso e 0 caso não*/
-int insereRegistro(Filme *novo){
-    //TODO inserir árvore
-}
-
-/* Altera registro no arquivo de dados. Retorna 1 se a operação teve sucesso e 0 caso não
-int alteraRegistro(char novaNota, char *idFilme){
-    FILE *dadosp = fopen(NOME_ARQ_DADOS, "r+");
-
-    if(!dadosp){
-        printf("Erro ao abrir o arquivo para alteração");
-
-        return 0;
-    }
-
-    int pos = buscaPrimaria(idFilme, 0, numeroFilmes); //identifica filme pela chave primária
-
-    fseek(dadosp, vetorPrimario[pos].RRN, SEEK_SET); //posiciona ponteiro
-
-    char buffer[TAM_REGISTRO + 1], tituloaux[MAX_NOME + 1], tituloportaux[MAX_NOME + 1], diretoraux[MAX_NOME + 1], anoaux[5], paisaux[MAX_NOME + 1]; //strings auxiliares para leitura de campos
-
-    fgets(buffer, TAM_REGISTRO + 1, dadosp); //lê registro
-
-    if (sscanf(buffer, "%[^@]@%[^@]@%[^@]@%[^@]@%[^@]@%[^@]@", idFilme, tituloaux, tituloportaux, diretoraux, anoaux, paisaux) != 6) { //lê campos
-        printf("Erro ao ler os campos.\n");
-        return 0;
-    } 
-
-    long int tamNota;
-    tamNota = strlen(idFilme) + strlen(tituloaux) + strlen(tituloportaux) + strlen(diretoraux) + strlen(anoaux) + strlen(paisaux) + 6; //tamanho de cada campo + separadores
-
-    fseek(dadosp, tamNota - TAM_REGISTRO , SEEK_CUR); //posiciona o ponteiro no campo da nota
-
-    fputc(novaNota, dadosp); //atualiza a nota
-
-    fclose(dadosp);
-
-    return 1;
 }
 
 /* Ordena o vetor de índices secundários considerando o título. Insertion Sort
@@ -136,24 +96,6 @@ void ordenaSecundario(){
         }
 
         vetorTitulos[j + 1] = aux;
-    }
-}
-
-/* Busca filme pelo índice primário e retorna sua posição no vetor. Caso não haja registro com esse ID, retorna -1. Busca binária
-int buscaPrimaria(char *chavePrimaria, int i, int j){
-    int mid = (i + j) / 2;
-    int val = strcmp(vetorPrimario[mid].chavePrimaria, chavePrimaria);
-
-    if(i > j){ //não há filme no vetor com essa chave primária
-        return -1;
-    } else if(val == 0){ //encontrou o filme
-        return mid; //retorna posição
-    } else{ //continuar buscando
-        if(val > 0){ //mid > chave buscada -> chave está na parte inferior do vetor
-            return buscaPrimaria(chavePrimaria, i, mid - 1);
-        } else{ //chave está na metade superior do vetor
-            return buscaPrimaria(chavePrimaria, mid + 1, j);
-        }
     }
 }
 
@@ -215,12 +157,37 @@ void atualizaIndices(){
     
     fclose(secundario);
 }
-
-/* Chama função de atualizar índices e libera as memórias alocadas
-void sair(){
-    atualizaIndices();
-
-    free(vetorPrimario);
-    free(vetorTitulos);
-}
 */
+
+/* Função que verifica se o índice secundário existe. Retorna 0 se não existir e 1 se existir*/
+int verificaSecundario(){
+    FILE *fp;
+
+    if((fp = fopen(NOME_INDICE_TITULO, "r+")) == NULL){ //não existe arquivo;
+        return 0;
+    }
+
+    free(fp);
+    return 1;
+}
+
+/* Remove posição do vetor de índice secundário a partir de sua posição, readequando as posições dos demais elementos. Retorna 1 se a operação teve sucesso e 0 caso não*/
+int removePosicaoSecundario(int pos){
+    int i;
+
+    for(i = pos; i < numeroFilmes - 1; i ++){ //readequa posições do vetor a partir do elemento a ser removido
+        vetorTitulos[i] = vetorTitulos[i+1];
+    }
+
+    IndiceSecundario *novoVetorTitulos = realloc(vetorTitulos, (numeroFilmes - 1) * sizeof(IndiceSecundario)); //realoca vetor
+
+    if(!novoVetorTitulos){
+        printf("erro no realloc");
+
+        return 0;
+    }
+
+    vetorTitulos = novoVetorTitulos;
+    
+    return 1;
+}

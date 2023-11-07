@@ -1,6 +1,8 @@
 #include "../include/structs.h"
-#include "../include/arquivos.h"
-#include "../include/interacao.h"
+#include "../include/bplus-tree-manipulation.h"
+#include "../include/secondaryindex-manipulation.h"
+#include "../include/datafile-manipulation.h"
+#include "../include/user-interaction.h"
 
 /* variáveis globais */
 IndiceSecundario *vetorTitulos = NULL; //índice secundário em RAM
