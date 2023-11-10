@@ -14,9 +14,9 @@
 #define TAM_CHAVE 5
 #define TAM_REGISTRO 192
 
-#define NOME_ARQ_DADOS "data/movies.dat"
-#define NOME_INDICE_PRIMARIO "data/arvore.idx"
-#define NOME_INDICE_TITULO "data/ititles.idx"
+#define NOME_ARQ_DADOS "../data/movies.dat"
+#define NOME_INDICE_PRIMARIO "../data/arvore.idx"
+#define NOME_INDICE_TITULO "../data/ititles.idx"
 
 /* Definição de estruturas */
 typedef struct{

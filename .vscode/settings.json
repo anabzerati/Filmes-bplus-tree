@@ -1,0 +1,8 @@
+{
+    "files.associations": {
+        "user-interaction.h": "c",
+        "datafile-manipulation.h": "c",
+        "secondaryindex-manipulation.h": "c",
+        "bplus-tree-manipulation.h": "c"
+    }
+}

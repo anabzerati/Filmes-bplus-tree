@@ -3,9 +3,13 @@
 #define SECONDARYINDEXMANIPULATION_H
 
 #include "structs.h"
+#include "datafile-manipulation.h"
 
 /* Função que verifica se o índice secundário existe. Retorna 0 se não existir e 1 se existir*/
 int verificaSecundario();
+
+/* Insere registro no vetor de índice secundário */
+int insereIndiceSecundario(Filme *);
 
 /* Remove posição do vetor de índice secundário a partir de sua posição, readequando as posições dos demais elementos. Retorna 1 se a operação teve sucesso e 0 caso não*/
 int removePosicaoSecundario(int pos);

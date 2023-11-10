@@ -80,9 +80,10 @@ void imprimeFilme(Filme *aux){
 /* Faz o intermédio entre ler os dados do filme e ser inserido e chamar a função de inserir. Verifica sucesso e imprime uma mensagem na tela*/
 void insercao(){
     Filme *aux = leDadosFilme(); //pega info com usuário
-    int flag = insereRegistro(aux); //insere no arquivo de dados e nos vetores de índice
 
-    if(flag == 0){
+    //inserir no arq de dados, na indice sec e na árvore
+
+    if(insereArquivoDados(aux) == -1 || insereIndiceSecundario(aux) == -1){
         printf("\nNão foi possível inserir");
     } else{
         printf("\nFilme '%s' inserido com sucesso!", aux->tituloOriginal);

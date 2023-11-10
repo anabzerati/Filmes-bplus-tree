@@ -6,6 +6,7 @@
 #include "datafile-manipulation.h"
 #include "secondaryindex-manipulation.h"
 #include "bplus-tree-manipulation.h"
+#include <ctype.h>
 
 /* Lê dados do filme inseridos pelo usuário e retorna uma struct preenchida */
 Filme *leDadosFilme();

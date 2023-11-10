@@ -17,6 +17,36 @@ int verificaDados(){
     return 1;
 }
 
+int insereArquivoDados(Filme *novoFilme){
+    char buffer[TAM_REGISTRO + 1];
+
+    FILE *dadosp = fopen(NOME_ARQ_DADOS, "a+");
+
+    if(!dadosp){
+        perror("Erro ao abrir o arquivo de dados");
+        return -1;
+    }
+
+    // "concatenar" várias strings de uma vez - formatar string com @ entre os campos
+    sprintf(buffer,"%s@%s@%s@%s@%s@%s@%c@", novoFilme->chavePrimaria, novoFilme->tituloOriginal, novoFilme->tituloPortugues, 
+        novoFilme->diretor, novoFilme->anoLancamento, novoFilme->pais, novoFilme->nota);
+    
+    // preencher o resto do registro com '#'
+    memset(buffer + strlen(buffer), '#', TAM_REGISTRO - strlen(buffer));
+    buffer[TAM_REGISTRO] = '\0';
+
+    // escrever registro no arquivo de dados
+    fputs(buffer, dadosp);
+
+    // após inserir o registro no arquivo de dados, é necessário adicioná-lo aos arquivos de índices
+    numeroFilmes++;
+
+    long auxRRN = ftell(dadosp) - TAM_REGISTRO; //posição onde inseriu
+
+    fclose (dadosp);
+
+    return auxRRN; 
+}
 
 /* Altera registro no arquivo de dados. Retorna 1 se a operação teve sucesso e 0 caso não
 int alteraRegistro(char novaNota, char *idFilme){

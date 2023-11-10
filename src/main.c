@@ -5,13 +5,14 @@
 #include "../include/user-interaction.h"
 
 /* variáveis globais */
+No *raiz = NULL;
 IndiceSecundario *vetorTitulos = NULL; //índice secundário em RAM
 int numeroFilmes = 0; //quantidade de registros dos índices
 
 int main(){
     int i;
 
-    vetorTitulos = carregaSecundario(); //carrega vetor com dados do índice secundário de título
+    /*vetorTitulos = carregaSecundario(); //carrega vetor com dados do índice secundário de título
     
     int op = 1;
     while(op){
@@ -52,7 +53,18 @@ int main(){
             break;
         }
         
-    }
+    }*/
+
+    /*typedef struct{
+    int RRN;
+    int eFolha;
+    char chaves[ORDEM][TAM_CHAVE+1]; //array de chaves
+    int dadosRRN[ORDEM];
+    int filhos[ORDEM];
+    int numChaves;
+    int pai;
+    int prox;
+} No;*/
 
     return 0;
 }

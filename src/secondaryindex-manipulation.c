@@ -9,10 +9,20 @@ extern int numeroFilmes;
 IndiceSecundario *carregaSecundario(){
     char bufferNom[MAX_NOME + 1];
     int i = 0, flag;
+    FILE *dadosp, *fp;
 
-    FILE *dadosp = fopen(NOME_ARQ_DADOS, "r+");
-    FILE *fp = fopen(NOME_INDICE_TITULO, "r+");
+    if(verificaDados()){
+        dadosp = fopen(NOME_ARQ_DADOS, "r+");
+    } else{
+        dadosp = fopen(NOME_ARQ_DADOS, "w+");
+    }
 
+    if(verificaSecundario()){
+        fp = fopen(NOME_INDICE_TITULO, "r+");
+    } else{
+        fp = fopen(NOME_INDICE_TITULO, "w+");
+    } 
+    
     //leitura do header
     fscanf(fp, "%d", &flag); //flag de consistência
 
@@ -79,6 +89,29 @@ void criaSecundario(FILE *dadosp, FILE *secundariop){
             }
         }
     }
+}
+
+int insereIndiceSecundario(Filme *novoFilme){
+    IndiceSecundario * novovetorTitulos = realloc(vetorTitulos, numeroFilmes * sizeof(IndiceSecundario)); //realocando vetor de títulos
+
+    if(!novovetorTitulos){ //verificando se a memória foi realocada
+        printf("Erro ao alocar memória");
+        
+        return -1;
+    }
+
+    vetorTitulos = novovetorTitulos;
+
+    strcpy(vetorTitulos[numeroFilmes - 1].titulo, novoFilme->tituloOriginal);
+    strcpy(vetorTitulos[numeroFilmes - 1].chavePrimaria, novoFilme->chavePrimaria);
+
+    ordenaSecundario(); //reordena vetor
+
+    return 1; 
+}
+
+void ordenaSecundario(){
+    printf("ordenado");
 }
 
 /* Ordena o vetor de índices secundários considerando o título. Insertion Sort
