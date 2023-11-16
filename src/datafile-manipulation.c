@@ -3,6 +3,7 @@
 #include "../include/datafile-manipulation.h"
 
 extern IndiceSecundario *vetorTitulos;
+extern No *raiz;
 extern int numeroFilmes;
 
 /* Função que verifica se o arquivo de dados existe. Retorna 0 se não existir e 1 se existir*/
@@ -91,3 +92,9 @@ void sair(){
     free(vetorTitulos);
 }
 */
+
+/* Chama função de atualizar índices e libera as memórias alocadas*/
+void sair(){
+    FILE *fp = fopen(NOME_INDICE_PRIMARIO, "rb+");
+    fprintf(fp, "%d", raiz->RRN);
+}

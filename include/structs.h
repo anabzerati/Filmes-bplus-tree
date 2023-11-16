@@ -6,7 +6,7 @@
 #include <string.h>
 
 /* Definições */
-#define ORDEM 3
+#define ORDEM 4
 #define TAM_REGISTRO_ARVORE (6 * ORDEM + 5) //TODO conferir
 
 #define MAX_NOME 30

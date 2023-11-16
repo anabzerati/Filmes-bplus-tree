@@ -81,13 +81,14 @@ void imprimeFilme(Filme *aux){
 void insercao(){
     Filme *aux = leDadosFilme(); //pega info com usuário
 
-    //inserir no arq de dados, na indice sec e na árvore
+    //inserir no arq de dados (pegar byteoffset), na indice sec e na árvore
+    insereNo(aux->chavePrimaria, 0);
 
-    if(insereArquivoDados(aux) == -1 || insereIndiceSecundario(aux) == -1){
+    /*if(insereArquivoDados(aux) == -1 || insereIndiceSecundario(aux) == -1){
         printf("\nNão foi possível inserir");
     } else{
         printf("\nFilme '%s' inserido com sucesso!", aux->tituloOriginal);
-    }
+    }*/
 }
 
 /* Lê dados para a busca, chama a função para realizar a busca binária e, por fim, caso seja encontrado um filme, lê seus dados do arquivo de dados e imprime na tela. Caso não encontre, imrpime mensagem de erro

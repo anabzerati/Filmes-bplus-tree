@@ -13,13 +13,17 @@
     int prox;
 } No;*/
 
+#include <math.h>
 #include "structs.h"
+
+/* Carrega raíz para memória principal */
+void carregaRaiz();
 
 /* Cria nó vazio */
 No *criaNo();
 
 /* Armazena novo nó da árvore no arquivo */
-void armazenaNo(No *);
+long armazenaNo(No *);
 
 /* A partir do RRN, lê nó da arvore do arquivo */
 No *carregaNo(long RRN);

@@ -7,11 +7,46 @@ extern No* raiz;
 extern IndiceSecundario *vetorTitulos;
 extern int numeroFilmes;
 
+/* Carrega raíz para memória principal */
+void carregaRaiz(){
+    long rrnRaiz;
+    FILE *fp; 
+    
+    fp = fopen(NOME_INDICE_PRIMARIO, "rb+");
+
+    if(! fp){ //arquivo não existe
+        fp = fopen(NOME_INDICE_PRIMARIO, "wb+"); //cria arquivo
+        fprintf(fp, "0\n"); // rrn da raíz
+
+        raiz = criaNo(); //nó vazio
+        raiz->eFolha = 1;
+
+        fclose(fp);
+
+        return;
+    }
+
+    //leitura do header
+    fscanf(fp, "%ld", &rrnRaiz); //RRN da raíz
+
+    if(rrnRaiz == -1){ //arquivo vazio
+        fprintf(fp, "0\n"); // rrn da raíz
+
+        raiz = criaNo(); //no vazio
+        raiz->eFolha = 1;
+    } else{
+        raiz = carregaNo(rrnRaiz);
+    }
+
+    fclose(fp);
+}
+
 /* Cria nó vazio */
 No *criaNo(){
     int i;
     No *novo = malloc(sizeof(No)); // aloca espaço
 
+    // inicializa vetores como vazios
     for(i = 0; i < ORDEM; i ++){
         strcpy(novo->chaves[i], "NULL");
         novo->dadosRRN[i] = -1;
@@ -28,23 +63,35 @@ No *criaNo(){
 }
 
 /* Armazena novo nó da árvore no arquivo */
-void armazenaNo(No *novoNo){
-    printf("CHEGOU");
+long armazenaNo(No *novoNo){
+    FILE *fp = fopen(NOME_INDICE_PRIMARIO, "rb+");
+    fseek(fp, 0, SEEK_END);
 
-    FILE *fp = fopen(NOME_INDICE_PRIMARIO, "a+");
     if(!fp){
         perror("Não foi possível abrir o arquivo");
-        return;
+        return -1;
+    }
+
+    long byteoffset;
+
+    if(novoNo->RRN == -1){ // novo nó da árvore
+        byteoffset = ftell(fp); // escreve após último registro
+        novoNo->RRN = byteoffset;
+    } else{ //sobrescrever nó já existente
+        byteoffset = novoNo->RRN;
+        fseek(fp, byteoffset, SEEK_SET); //posiciona ponteiro
     }
 
     fwrite(novoNo, sizeof(No), 1, fp);
 
     fclose(fp);
+
+    return byteoffset;
 }
 
 /* A partir do RRN, lê nó da arvore do arquivo */
 No *carregaNo(long RRN){
-    FILE *fp = fopen(NOME_INDICE_PRIMARIO, "r+");
+    FILE *fp = fopen(NOME_INDICE_PRIMARIO, "rb+");
 
     if(!fp){
         perror("Não foi possível abrir o arquivo");
@@ -53,7 +100,7 @@ No *carregaNo(long RRN){
     
     fseek(fp, RRN, SEEK_SET);
 
-    No *noLido = malloc(sizeof(No));
+    No *noLido = malloc(sizeof(No)); //alocar espaço em memória
     fread(noLido, sizeof(No), 1, fp);
 
     fclose(fp);
@@ -65,7 +112,7 @@ No *carregaNo(long RRN){
 No *buscaNo(char* chave){
     No *noAtual = raiz; // inicia busca pela raiz
 
-    while(! noAtual->eFolha){
+    while(! noAtual->eFolha){ //enquanto não for folha
         for(int i=0; i < noAtual->numChaves; i ++){ //percorre todas as chaves
             if(! strcmp(chave, noAtual->chaves[i])){ // se achou a chave
                 noAtual = carregaNo(noAtual->filhos[i + 1]); //carrega filho à direita
@@ -84,41 +131,89 @@ No *buscaNo(char* chave){
 }
 
 /* Insere novo nó na arvore, considerando a chave primária do filme */
-void insereNo(char*, long);
+void insereNo(char* chave, long RRNChaveDados){
+    No *noFolha = buscaNo(chave);
+
+    insereNoFolha(noFolha, chave, RRNChaveDados);
+
+    // verificar necessidade de split
+    if(noFolha->numChaves == ORDEM){ // overflow (max = ORDEM-1)
+        // cria novo nó (vazio) e inicializa
+        No *novoNo = criaNo();
+
+        novoNo->eFolha = 1;
+        novoNo->pai = noFolha->pai;
+
+        int posicaoMedia = (int) ceil(ORDEM / 2.0) - 1;
+
+        int j;
+        for (int i = posicaoMedia, j = 0; i < ORDEM; i++, j++) {
+            strcpy(novoNo->chaves[j], noFolha->chaves[i]); //distribui chaves
+            strcpy(noFolha->chaves[i], "NULL");
+
+            novoNo->dadosRRN[j] = noFolha->dadosRRN[i];
+            noFolha->dadosRRN[i] = -1;
+        }
+
+        novoNo->numChaves = ORDEM - posicaoMedia;
+        noFolha->numChaves = posicaoMedia;
+
+        long RRNNovoNo = armazenaNo(novoNo);
+
+        noFolha->prox = RRNNovoNo;
+        
+        armazenaNo(noFolha);
+
+        insereNoPai(noFolha, novoNo->chaves[0], novoNo);
+    } else{
+        // escrever no arquivo (sobrescrever)
+        armazenaNo(noFolha);
+    }
+}
 
 /* Insere nova chave no nó folha */
-void insereNoFolha(No *folha, char*chave, long RRNChaveDados){
+void insereNoFolha(No *folha, char *chave, long RRNChaveDados){
     if(folha->numChaves == 0){ //folha vazia
         strcpy(folha->chaves[0], chave); // chave na primeira posição
         folha->dadosRRN[0] = RRNChaveDados;
         folha->numChaves++;
     } else{
-        for(int i = 0; i < folha->numChaves -1; i ++){
-            if(chave == folha->chaves[i]){ //chave já foi inserida
-                perror("Chave já inserida"); // TODO verificar
-                break;
-            } else if(chave < folha->chaves[i]){ //encontrada posição onde inserir
-                // reposiciona chaves para direita
-                for(int j = folha->numChaves; j > i; j --){
-                    strcpy(folha->chaves[j], folha->chaves[j-1]);
-                    folha->dadosRRN[j] = folha->dadosRRN[j-1];
-                }
+        int i = 0;
 
-                // adiciona chave
-                strcpy(folha->chaves[i], chave);
-                folha->dadosRRN[i] = RRNChaveDados;
-
-                break;
-            } else if(i + 1 == folha->numChaves){ //adicion chave na última posição
-                strcpy(folha->chaves[i+1], chave);
-                folha->dadosRRN[i+1] = RRNChaveDados;
-            }
+        while(i<folha->numChaves && strcmp(chave, folha->chaves[i]) > 0){ //encontra posição
+            i++;
         }
+
+        for (int j = folha->numChaves; j > i; j--) { //reposiciona chaves
+            strcpy(folha->chaves[j], folha->chaves[j - 1]);
+        }
+
+        //adiciona nova chave
+        strcpy(folha->chaves[i], chave);
+        folha->dadosRRN[i] = RRNChaveDados;
+
+        folha->numChaves++;
     }
 }
 
 /* Após overflow, insere chave promovida no nó pai, nó interno da árvore*/
-void insereNoPai(No*, char*, No*);
+//TODO terminar
+void insereNoPai(No* noOriginal, char* chavePromovida, No* noNovo){
+    if(raiz->RRN == noOriginal->RRN){ // condição de parada -> overflow na raíz
+        No *novaRaiz = criaNo();
+
+        novaRaiz->eFolha = 0;
+        strcpy(novaRaiz->chaves[0], chavePromovida);
+        novaRaiz->filhos[0] = noOriginal->RRN;
+        novaRaiz->filhos[1] = noNovo->RRN;
+        novaRaiz->numChaves = 1;
+        
+        raiz = novaRaiz;
+
+        noOriginal->pai = raiz->RRN; //COMO SE AINDA N ESCREVI
+        noNovo->pai = raiz->RRN;
+    }
+}
 
 
 // TODO ler nó/página
