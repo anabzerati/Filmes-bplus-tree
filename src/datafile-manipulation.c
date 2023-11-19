@@ -96,5 +96,5 @@ void sair(){
 /* Chama função de atualizar índices e libera as memórias alocadas*/
 void sair(){
     FILE *fp = fopen(NOME_INDICE_PRIMARIO, "rb+");
-    fprintf(fp, "%d", raiz->RRN);
+    fprintf(fp, "%ld", raiz->RRN);
 }

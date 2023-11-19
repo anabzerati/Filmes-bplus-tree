@@ -67,7 +67,16 @@ int main(){
     int prox;
 } No;*/
 
-    printf("RRN %d é folha %d chave0 %s chave1 %s chave2 %s chave3 %s quant chaves %d filho0 %d", raiz->RRN, raiz->eFolha, raiz->chaves[0], raiz->chaves[1], raiz->chaves[2], raiz->chaves[3], raiz->numChaves, raiz->filhos[0]);
+    printf("RRN %d é folha %d chave0 %s chave1 %s chave2 %s chave3 %s quant chaves %d RRN0 %d RRNFILHO0 %d RRNFILHO1 %d", raiz->RRN, raiz->eFolha, raiz->chaves[0], raiz->chaves[1], raiz->chaves[2], raiz->chaves[3], raiz->numChaves, raiz->dadosRRN[0], raiz->filhos[0], raiz->filhos[1]);
+
+    printf("\n FILHO ESQ");
+    No *teste = carregaNo(raiz->filhos[0]);
+    printf(" RRN %d é folha %d chave0 %s chave1 %s chave2 %s chave3 %s quant chaves %d RRN0 %d RRNFILHO0 %d RRNFILHO1 %d", teste->RRN, teste->eFolha, teste->chaves[0], teste->chaves[1], teste->chaves[2], teste->chaves[3], teste->numChaves, teste->dadosRRN[0], teste->filhos[0], teste->filhos[1]);
+
+    printf("\n FILHO DIR");
+    No *teste2 = carregaNo(raiz->filhos[1]);
+    printf(" RRN %d é folha %d chave0 %s chave1 %s chave2 %s chave3 %s quant chaves %d RRN0 %d RRNFILHO0 %d RRNFILHO1 %d", teste2->RRN, teste2->eFolha, teste2->chaves[0], teste2->chaves[1], teste2->chaves[2], teste2->chaves[3], teste2->numChaves, teste2->dadosRRN[0], teste2->filhos[0], teste2->filhos[1]);
 
     return 0;
 }
+

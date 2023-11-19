@@ -16,7 +16,7 @@ void carregaRaiz(){
 
     if(! fp){ //arquivo não existe
         fp = fopen(NOME_INDICE_PRIMARIO, "wb+"); //cria arquivo
-        fprintf(fp, "0\n"); // rrn da raíz
+        fprintf(fp, "%ld\n", 0); // rrn da raíz
 
         raiz = criaNo(); //nó vazio
         raiz->eFolha = 1;
@@ -28,9 +28,10 @@ void carregaRaiz(){
 
     //leitura do header
     fscanf(fp, "%ld", &rrnRaiz); //RRN da raíz
+    printf("\n RRN RAIZ LIDO %ld", rrnRaiz);
 
     if(rrnRaiz == -1){ //arquivo vazio
-        fprintf(fp, "0\n"); // rrn da raíz
+        fprintf(fp, "%ld\n", 0); // rrn da raíz
 
         raiz = criaNo(); //no vazio
         raiz->eFolha = 1;
@@ -48,7 +49,7 @@ No *criaNo(){
 
     // inicializa vetores como vazios
     for(i = 0; i < ORDEM; i ++){
-        strcpy(novo->chaves[i], "NULL");
+        strcpy(novo->chaves[i], "NULL0");
         novo->dadosRRN[i] = -1;
         novo->filhos[i] = -1;
     }
@@ -131,25 +132,25 @@ No *buscaNo(char* chave){
 }
 
 /* Insere novo nó na arvore, considerando a chave primária do filme */
+// TODO verificar se chave já existe
 void insereNo(char* chave, long RRNChaveDados){
     No *noFolha = buscaNo(chave);
 
     insereNoFolha(noFolha, chave, RRNChaveDados);
 
-    // verificar necessidade de split
     if(noFolha->numChaves == ORDEM){ // overflow (max = ORDEM-1)
         // cria novo nó (vazio) e inicializa
         No *novoNo = criaNo();
 
         novoNo->eFolha = 1;
-        novoNo->pai = noFolha->pai;
+        novoNo->pai = noFolha->pai; //mesmo pai do nó "original"
 
         int posicaoMedia = (int) ceil(ORDEM / 2.0) - 1;
 
-        int j;
-        for (int i = posicaoMedia, j = 0; i < ORDEM; i++, j++) {
+        int i, j;
+        for (i = posicaoMedia, j = 0; i < ORDEM; i++, j++) {
             strcpy(novoNo->chaves[j], noFolha->chaves[i]); //distribui chaves
-            strcpy(noFolha->chaves[i], "NULL");
+            strcpy(noFolha->chaves[i], "NULL"); //"esvazia" folha "original"
 
             novoNo->dadosRRN[j] = noFolha->dadosRRN[i];
             noFolha->dadosRRN[i] = -1;
@@ -158,13 +159,15 @@ void insereNo(char* chave, long RRNChaveDados){
         novoNo->numChaves = ORDEM - posicaoMedia;
         noFolha->numChaves = posicaoMedia;
 
-        long RRNNovoNo = armazenaNo(novoNo);
-
-        noFolha->prox = RRNNovoNo;
-        
-        armazenaNo(noFolha);
+        novoNo->RRN = verificaFinalArquivo();
+        armazenaNo(novoNo);
 
         insereNoPai(noFolha, novoNo->chaves[0], novoNo);
+
+        armazenaNo(novoNo);
+        noFolha->prox = novoNo->RRN; //nó antigo aponta para novo (seguinte)
+        
+        armazenaNo(noFolha); //sobrescreve
     } else{
         // escrever no arquivo (sobrescrever)
         armazenaNo(noFolha);
@@ -186,6 +189,7 @@ void insereNoFolha(No *folha, char *chave, long RRNChaveDados){
 
         for (int j = folha->numChaves; j > i; j--) { //reposiciona chaves
             strcpy(folha->chaves[j], folha->chaves[j - 1]);
+            folha->dadosRRN[j] = folha->dadosRRN[j - 1];
         }
 
         //adiciona nova chave
@@ -199,7 +203,7 @@ void insereNoFolha(No *folha, char *chave, long RRNChaveDados){
 /* Após overflow, insere chave promovida no nó pai, nó interno da árvore*/
 //TODO terminar
 void insereNoPai(No* noOriginal, char* chavePromovida, No* noNovo){
-    if(raiz->RRN == noOriginal->RRN){ // condição de parada -> overflow na raíz
+    if(raiz->RRN == noOriginal->RRN){ // condição inicial e de parada -> overflow na raíz
         No *novaRaiz = criaNo();
 
         novaRaiz->eFolha = 0;
@@ -207,12 +211,83 @@ void insereNoPai(No* noOriginal, char* chavePromovida, No* noNovo){
         novaRaiz->filhos[0] = noOriginal->RRN;
         novaRaiz->filhos[1] = noNovo->RRN;
         novaRaiz->numChaves = 1;
+
+        novaRaiz->RRN = verificaFinalArquivo();
+        armazenaNo(novaRaiz);
         
         raiz = novaRaiz;
 
-        noOriginal->pai = raiz->RRN; //COMO SE AINDA N ESCREVI
+        noOriginal->pai = raiz->RRN; 
         noNovo->pai = raiz->RRN;
+
+        return;
     }
+
+    No *noPai = carregaNo(noOriginal->pai); //carrega pai (onde ocorre promoção)
+    
+    int i;
+    for(i = 0; i < noPai->numChaves + 1; i ++){ //percorre filhos do pai
+        if(noPai->filhos[i] == noOriginal->RRN){ 
+            for (int j = noPai->numChaves; j > i; j--) { //reposiciona chaves do pai
+                strcpy(noPai->chaves[j], noPai->chaves[j - 1]);
+                noPai->dadosRRN[j] = noPai->dadosRRN[j - 1];
+            }
+
+            strcpy(noPai->chaves[i + 1], chavePromovida); //adiciona chave promovida após a original
+            noPai->dadosRRN[i + 1] = noNovo->RRN;
+            noPai->numChaves++;
+        }
+    }
+
+    if (noPai->numChaves == ORDEM) { //overflow -> criar novo nó e adequar
+        No *irmaoPai = criaNo();
+
+        irmaoPai->pai = noPai->pai;
+        irmaoPai->eFolha = 0;
+
+        int posicaoMedia = (int) ceil(ORDEM / 2.0) - 1;
+
+        int i, j;
+        for (i = posicaoMedia, j = 0; i < ORDEM; i++, j++) {
+            strcpy(irmaoPai->chaves[j], noPai->chaves[i]); //distribui chaves
+            strcpy(noPai->chaves[i], "NULL"); //"esvazia" pai "original"
+
+            irmaoPai->filhos[j] = noPai->filhos[i];
+            noPai->filhos[i] = -1;
+        }
+
+        irmaoPai->numChaves = ORDEM - posicaoMedia;
+        noPai->numChaves = posicaoMedia;
+
+        irmaoPai->RRN = verificaFinalArquivo();
+
+         for (int k = 0; k <= irmaoPai->numChaves; k++) {
+            No *filho = carregaNo(irmaoPai->filhos[k]);
+            filho->pai = irmaoPai->RRN; //altera pai
+            armazenaNo(filho);
+        }
+
+        armazenaNo(noPai);
+        armazenaNo(irmaoPai);
+
+        insereNoPai(noPai, irmaoPai->chaves[0], irmaoPai);
+    }  
+}
+
+long verificaFinalArquivo(){
+    FILE *fp = fopen(NOME_INDICE_PRIMARIO, "rb");
+
+    if(! fp){
+        perror("Erro ao abrir o arquivo");
+        return -1;
+    }
+
+    fseek(fp, 0, SEEK_END);
+    long RRNFinal = ftell(fp);
+
+    fclose(fp);
+
+    return RRNFinal; 
 }
 
 
