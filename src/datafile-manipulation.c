@@ -97,6 +97,5 @@ void sair(){
 void sair(){
     FILE *fp = fopen(NOME_INDICE_PRIMARIO, "rb+");
     fprintf(fp, "%020ld\n", raiz->RRN);    
-    printf("FTELL APÓS MUDAR RAÍZ %d", ftell(fp));
     fclose(fp);
 }

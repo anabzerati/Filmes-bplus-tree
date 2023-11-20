@@ -283,8 +283,8 @@ void insereNoPai(No* noOriginal, char* chavePromovida, No* noNovo){
                 noPai->dadosRRN[j] = noPai->dadosRRN[j - 1];
             }
 
-            strcpy(noPai->chaves[i + 1], chavePromovida); //adiciona chave promovida após a original
-            noPai->dadosRRN[i + 1] = noNovo->RRN;
+            strcpy(noPai->chaves[i], chavePromovida); //adiciona chave promovida após a original
+            noPai->filhos[i + 1] = noNovo->RRN;
             noPai->numChaves++;
         }
     }
@@ -323,7 +323,9 @@ void insereNoPai(No* noOriginal, char* chavePromovida, No* noNovo){
         armazenaNo(irmaoPai);
 
         insereNoPai(noPai, novaChavePromovida, irmaoPai);
-    }  
+    } else{
+        armazenaNo(noPai);
+    }
 }
 
 long verificaFinalArquivo(){
