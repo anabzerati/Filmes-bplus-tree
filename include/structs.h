@@ -7,7 +7,7 @@
 
 /* Definições */
 #define ORDEM 4
-#define TAM_REGISTRO_ARVORE (6 * ORDEM + 5) //TODO conferir
+#define TAM_HEADER 20 
 
 #define MAX_NOME 30
 #define MAX_QUANTIDADE 100
@@ -30,14 +30,14 @@ typedef struct{
 } Filme;
 
 typedef struct{
-    int RRN;
+    long RRN;
     int eFolha;
     char chaves[ORDEM][TAM_CHAVE+1]; //array de chaves
-    int dadosRRN[ORDEM];
-    int filhos[ORDEM];
+    long dadosRRN[ORDEM];
+    long filhos[ORDEM];
     int numChaves;
     int pai;
-    int prox;
+    long prox;
 } No;
 
 typedef struct{

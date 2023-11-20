@@ -16,7 +16,7 @@ void carregaRaiz(){
 
     if(! fp){ //arquivo não existe
         fp = fopen(NOME_INDICE_PRIMARIO, "wb+"); //cria arquivo
-        fprintf(fp, "%ld\n", 0); // rrn da raíz
+        fprintf(fp, "%020ld\n", 0);
 
         raiz = criaNo(); //nó vazio
         raiz->eFolha = 1;
@@ -27,11 +27,11 @@ void carregaRaiz(){
     }
 
     //leitura do header
-    fscanf(fp, "%ld", &rrnRaiz); //RRN da raíz
-    printf("\n RRN RAIZ LIDO %ld", rrnRaiz);
+    fscanf(fp, "%020ld", &rrnRaiz); // RRN da raíz
 
     if(rrnRaiz == -1){ //arquivo vazio
-        fprintf(fp, "%ld\n", 0); // rrn da raíz
+        printf("entrou no if de arq vazio");
+        fprintf(fp, "%020ld\n", 0);
 
         raiz = criaNo(); //no vazio
         raiz->eFolha = 1;
@@ -76,14 +76,50 @@ long armazenaNo(No *novoNo){
     long byteoffset;
 
     if(novoNo->RRN == -1){ // novo nó da árvore
+        printf("entrou no if de novo nó");
         byteoffset = ftell(fp); // escreve após último registro
         novoNo->RRN = byteoffset;
     } else{ //sobrescrever nó já existente
         byteoffset = novoNo->RRN;
-        fseek(fp, byteoffset, SEEK_SET); //posiciona ponteiro
     }
 
-    fwrite(novoNo, sizeof(No), 1, fp);
+    fseek(fp, byteoffset, SEEK_SET); //posiciona ponteiro
+
+    char buffer[TAM_REGISTRO + 1];
+    int pos = 0;
+
+    // "concatenar" várias strings de uma vez - formatar string com @ entre os campos
+    snprintf(buffer + pos, sizeof(buffer) - pos, "%ld@%d@", novoNo->RRN, novoNo->eFolha);
+    pos = strlen(buffer);
+
+    for(int i = 0; i < ORDEM; i++){
+        snprintf(buffer + pos, sizeof(buffer) - pos, "%s@", novoNo->chaves[i]);
+        pos = strlen(buffer);
+    }
+
+    for(int i = 0; i < ORDEM; i++){
+        snprintf(buffer + pos, sizeof(buffer) - pos, "%ld@", novoNo->dadosRRN[i]);
+        pos = strlen(buffer);
+    }
+
+    for(int i = 0; i < ORDEM; i++){
+        snprintf(buffer + pos, sizeof(buffer) - pos, "%ld@", novoNo->filhos[i]);
+        pos = strlen(buffer);
+    }
+
+    snprintf(buffer + pos, sizeof(buffer) - pos, "%d@%d@%ld", novoNo->numChaves, novoNo->pai, novoNo->prox);
+    pos = strlen(buffer);
+
+    // preencher o resto do registro com '#'
+    memset(buffer + pos, '#', sizeof(buffer) - pos - 1);
+    buffer[sizeof(buffer) - 1] = '\0';
+
+    // escrever registro no arquivo de dados
+    printf("BUFFER\n %s", buffer);
+    fputs(buffer, fp);
+    printf("RRN APÓS ESCREVER NÓ %d", ftell(fp));
+
+    //fwrite(novoNo, sizeof(No), 1, fp);
 
     fclose(fp);
 
@@ -102,7 +138,23 @@ No *carregaNo(long RRN){
     fseek(fp, RRN, SEEK_SET);
 
     No *noLido = malloc(sizeof(No)); //alocar espaço em memória
-    fread(noLido, sizeof(No), 1, fp);
+    //fread(noLido, sizeof(No), 1, fp);
+
+    fscanf(fp, "%ld@%d@", &noLido->RRN, &noLido->eFolha);
+
+    for (int i = 0; i < ORDEM; i++) {
+        fscanf(fp, "%[^@]@", noLido->chaves[i]);
+    }
+
+    for (int i = 0; i < ORDEM; i++) {
+        fscanf(fp, "%ld@", &noLido->dadosRRN[i]);
+    }
+
+    for (int i = 0; i < ORDEM; i++) {
+        fscanf(fp, "%ld@", &noLido->filhos[i]);
+    }
+
+    fscanf(fp, "%d@%ld@%ld", &noLido->numChaves, &noLido->pai, &noLido->prox);
 
     fclose(fp);
 
@@ -128,7 +180,6 @@ No *buscaNo(char* chave){
         }
     }
 
-    printf("\n encontrado na busca %ld", noAtual->RRN);
     return noAtual;
 }
 
@@ -212,7 +263,6 @@ void insereNoPai(No* noOriginal, char* chavePromovida, No* noNovo){
         novaRaiz->filhos[1] = noNovo->RRN;
         novaRaiz->numChaves = 1;
 
-        novaRaiz->RRN = verificaFinalArquivo();
         armazenaNo(novaRaiz);
         
         raiz = novaRaiz;
@@ -246,9 +296,11 @@ void insereNoPai(No* noOriginal, char* chavePromovida, No* noNovo){
         irmaoPai->eFolha = 0;
 
         int posicaoMedia = (int) ceil(ORDEM / 2.0) - 1;
+        char novaChavePromovida[TAM_CHAVE + 1];
+        strcpy(novaChavePromovida, noPai->chaves[posicaoMedia]);
 
         int i, j;
-        for (i = posicaoMedia, j = 0; i < ORDEM; i++, j++) {
+        for (i = posicaoMedia + 1, j = 0; i < ORDEM; i++, j++) {
             strcpy(irmaoPai->chaves[j], noPai->chaves[i]); //distribui chaves
             strcpy(noPai->chaves[i], "NULL0"); //"esvazia" pai "original"
 
@@ -270,7 +322,7 @@ void insereNoPai(No* noOriginal, char* chavePromovida, No* noNovo){
         armazenaNo(noPai);
         armazenaNo(irmaoPai);
 
-        insereNoPai(noPai, irmaoPai->chaves[0], irmaoPai);
+        insereNoPai(noPai, novaChavePromovida, irmaoPai);
     }  
 }
 
