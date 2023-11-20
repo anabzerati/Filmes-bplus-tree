@@ -31,7 +31,7 @@ int main(){
         //    break;
 
         case 3: //buscar filme por chave primária
-            //busca();
+            busca();
             break;
 
         case 4: //editar filme

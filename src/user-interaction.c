@@ -144,6 +144,17 @@ void busca(){
             printf("Opção inválida!\n");
     }
 
+}*/
+
+void busca(){
+    char idaux[TAM_CHAVE + 1];
+
+    printf("\nInsira o ID do filme: ");
+    scanf(" %s", idaux);
+
+    No *encontrado = buscaNo(idaux);
+    printf(" RRN %d é folha %d chave0 %s chave1 %s chave2 %s chave3 %s quant chaves %d RRN0 %d RRNFILHO0 %d RRNFILHO1 %d", encontrado->RRN, encontrado->eFolha, encontrado->chaves[0], encontrado->chaves[1], encontrado->chaves[2], encontrado->chaves[3], encontrado->numChaves, encontrado->dadosRRN[0], encontrado->filhos[0], encontrado->filhos[1]);
+
 }
 
 /* Lê dados necessários e edita nota de um filme, no arquivo de dados, a partir de sua chave primária

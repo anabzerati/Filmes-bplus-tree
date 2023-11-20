@@ -118,7 +118,7 @@ No *buscaNo(char* chave){
             if(! strcmp(chave, noAtual->chaves[i])){ // se achou a chave
                 noAtual = carregaNo(noAtual->filhos[i + 1]); //carrega filho à direita
                 break;
-            } else if(chave < noAtual->chaves[i]){
+            } else if(strcmp(chave, noAtual->chaves[i]) < 0){
                 noAtual = carregaNo(noAtual->filhos[i]); //carrega filho à esquerda
                 break;
             } else if(i + 1 == noAtual->numChaves){
@@ -128,6 +128,7 @@ No *buscaNo(char* chave){
         }
     }
 
+    printf("\n encontrado na busca %ld", noAtual->RRN);
     return noAtual;
 }
 
@@ -150,7 +151,7 @@ void insereNo(char* chave, long RRNChaveDados){
         int i, j;
         for (i = posicaoMedia, j = 0; i < ORDEM; i++, j++) {
             strcpy(novoNo->chaves[j], noFolha->chaves[i]); //distribui chaves
-            strcpy(noFolha->chaves[i], "NULL"); //"esvazia" folha "original"
+            strcpy(noFolha->chaves[i], "NULL0"); //"esvazia" folha "original"
 
             novoNo->dadosRRN[j] = noFolha->dadosRRN[i];
             noFolha->dadosRRN[i] = -1;
@@ -159,7 +160,6 @@ void insereNo(char* chave, long RRNChaveDados){
         novoNo->numChaves = ORDEM - posicaoMedia;
         noFolha->numChaves = posicaoMedia;
 
-        novoNo->RRN = verificaFinalArquivo();
         armazenaNo(novoNo);
 
         insereNoPai(noFolha, novoNo->chaves[0], novoNo);
@@ -250,7 +250,7 @@ void insereNoPai(No* noOriginal, char* chavePromovida, No* noNovo){
         int i, j;
         for (i = posicaoMedia, j = 0; i < ORDEM; i++, j++) {
             strcpy(irmaoPai->chaves[j], noPai->chaves[i]); //distribui chaves
-            strcpy(noPai->chaves[i], "NULL"); //"esvazia" pai "original"
+            strcpy(noPai->chaves[i], "NULL0"); //"esvazia" pai "original"
 
             irmaoPai->filhos[j] = noPai->filhos[i];
             noPai->filhos[i] = -1;
