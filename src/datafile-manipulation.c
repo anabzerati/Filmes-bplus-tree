@@ -49,6 +49,28 @@ int insereArquivoDados(Filme *novoFilme){
     return auxRRN; 
 }
 
+Filme *imprimeFilmeChavePrimaria(long RRN){
+    FILE *fp = fopen(NOME_ARQ_DADOS, "r+");
+    char buffer[TAM_REGISTRO + 1];
+    Filme *auxF = malloc(sizeof(Filme));
+
+    if(! fp){
+        perror("Erro ao abrir o arquivo");
+    }
+
+    fseek(fp, RRN, SEEK_SET);
+    fgets(buffer, TAM_REGISTRO, fp); //lê registro
+
+    //leitura formatada da string, atribuindo os campos do registro às variáveis da struct
+    if (sscanf(buffer, "%[^@]@%[^@]@%[^@]@%[^@]@%[^@]@%[^@]@%c", auxF->chavePrimaria, auxF->tituloOriginal, auxF->tituloPortugues, auxF->diretor, auxF->anoLancamento, auxF->pais, &auxF->nota) != 7) {
+        perror("Erro ao ler os campos.\n");
+    } 
+
+    fclose(fp);
+
+    return auxF;
+}
+
 /* Altera registro no arquivo de dados. Retorna 1 se a operação teve sucesso e 0 caso não
 int alteraRegistro(char novaNota, char *idFilme){
     FILE *dadosp = fopen(NOME_ARQ_DADOS, "r+");

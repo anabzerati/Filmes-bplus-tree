@@ -39,7 +39,7 @@ int main(){
             break;
 
         case 5: //listar filmes
-            //listarFilmes();
+            listarFilmes();
             break;
 
         //case 6: //compactar arquivo de dados

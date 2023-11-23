@@ -31,6 +31,8 @@ No *carregaNo(long RRN);
 /* Busca nó que contém a chave */
 No *buscaNo(char*);
 
+void buscaRange(char*, char*);
+
 /* Insere novo nó na arvore, considerando a chave primária do filme */
 void insereNo(char*, long);
 

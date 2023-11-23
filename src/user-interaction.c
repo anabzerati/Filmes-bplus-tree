@@ -1,6 +1,7 @@
 /* Implementação das funções definidas na biblioteca */
 
 #include "../include/user-interaction.h"
+#include "../include/bplus-tree-manipulation.h"
 
 extern IndiceSecundario *vetorTitulos;
 extern int numeroFilmes;
@@ -153,6 +154,7 @@ void busca(){
     scanf(" %s", idaux);
 
     No *encontrado = buscaNo(idaux);
+    // TODO falta percorrer as chaves e encontrar (ou não) a procurada. Depois buscar no arq de dados
     printf(" RRN %d é folha %d chave0 %s chave1 %s chave2 %s chave3 %s quant chaves %d RRN0 %d RRNFILHO0 %d RRNFILHO1 %d", encontrado->RRN, encontrado->eFolha, encontrado->chaves[0], encontrado->chaves[1], encontrado->chaves[2], encontrado->chaves[3], encontrado->numChaves, encontrado->dadosRRN[0], encontrado->filhos[0], encontrado->filhos[1]);
 
 }
@@ -183,20 +185,45 @@ void editarNota(){
         printf("Não foi possível alterar a nota.");
     }
 
-}
+}*/
 
-/* Percorre todo o arquivo de dados (seguindo a ordem alfabética de diretores), lendo o registro para RAM e imprimindo na tela suas informações
+/* Percorre todo o arquivo de dados (seguindo a ordem alfabética de diretores), lendo o registro para RAM e imprimindo na tela suas informações */
 void listarFilmes(){
-    int i;
+    int i, op;
 
+    printf("*LISTAGEM DE FILMES*\n");
+    printf("\n1 - Listagem em range\n2 - Listagem de todos os filmes cadastrados\n");
+    scanf("%d", &op);
+
+    switch (op){
+    case 1:
+        char idInicial[TAM_CHAVE + 1], idFinal[TAM_CHAVE + 1];
+
+        printf("\nInsira o ID do filme inicial: ");
+        scanf(" %s", idInicial);
+
+        printf("\nInsira o ID do filme final: ");
+        scanf(" %s", idFinal);
+
+        buscaRange(idInicial, idFinal);
+
+        break;
+    
+    case 2:
+        break;
+
+    default:
+        printf("Opção inválida!");
+        break;
+    }
+
+    /*
     FILE *dadosp = fopen(NOME_ARQ_DADOS, "r+");
 
     printf("\n*LISTA DE FILMES CADASTRADOS*\n");
     for(i = 0; i < numeroFilmes; i ++){
         Filme* auxFilme = leFilmeIndicePrimario(i); //carrega em RAM o filme do índice i do índice primário
-        imprimeFilme(auxFilme); //imprime informações na tela
-    }
+        imprimeFilme(auxFilme); //imprime informações na tela} 
+    */
 
-    fclose(dadosp);
 }
-*/

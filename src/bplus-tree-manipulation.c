@@ -1,6 +1,7 @@
 /* Implementação das funções definidas na biblioteca */
 
 #include "../include/bplus-tree-manipulation.h"
+#include "../include/datafile-manipulation.h"
 
 // "importando" variáveis globais da main
 extern No* raiz;
@@ -134,6 +135,10 @@ No *carregaNo(long RRN){
         perror("Não foi possível abrir o arquivo");
         return NULL;    
     }
+
+    if(RRN == -1){
+        return NULL;
+    }
     
     fseek(fp, RRN, SEEK_SET);
 
@@ -181,6 +186,29 @@ No *buscaNo(char *chave){
     }
 
     return noAtual;
+}
+
+void buscaRange(char *chaveInicial, char *chaveFinal){
+    No *noInicial = buscaNo(chaveInicial);
+    int i = 0;
+
+    while(strcmp(noInicial->chaves[i], chaveInicial) < 0){ // posiciona índice
+        i ++;
+    }
+
+    while(strcmp(noInicial->chaves[i], chaveFinal) <= 0){
+        //imprimeFilmeChavePrimaria(noInicial->dadosRRN[i]);
+        printf("CHAVE ATUAL %s ", noInicial->chaves[i]);
+        
+        i++;
+        if(i == noInicial->numChaves){ // percorreu todas as chaves, carrega próximo
+            i = 0;
+            noInicial = carregaNo(noInicial->prox);
+            if(! noInicial){ // acabaram os elementos
+                return;
+            }
+        }
+    }
 }
 
 /* Insere novo nó na arvore, considerando a chave primária do filme */
@@ -276,33 +304,20 @@ void insereNoPai(No* noOriginal, char* chavePromovida, No* noNovo){
     No *noPai = carregaNo(noOriginal->pai); //carrega pai (onde ocorre promoção)
     
     int i = 0;
-    /*for(i = 0; i < noPai->numChaves; i ++){ //percorre filhos do pai
-        if(noPai->filhos[i] == noOriginal->RRN){ 
-            for (int j = noPai->numChaves; j > i; j--) { //reposiciona chaves do pai
-                strcpy(noPai->chaves[j], noPai->chaves[j - 1]);
-                noPai->filhos[j] = noPai->filhos[j - 1];
-            }
-
-            strcpy(noPai->chaves[i], chavePromovida); //adiciona chave promovida após a original
-            noPai->filhos[i + 1] = noNovo->RRN;
-            noPai->numChaves++;
-        }
-    }*/
-
-    while(strcmp(noPai->chaves[i], chavePromovida) < 0 && i < noPai->numChaves){
+    while(strcmp(noPai->chaves[i], chavePromovida) < 0 && i < noPai->numChaves){ // busca posição onde inserir
         i++;
     }
 
     int j;
-    for(j = noPai->numChaves; j > i; j --){
+    for(j = noPai->numChaves; j > i; j --){ // reposiciona chaves do pai
         strcpy(noPai->chaves[j], noPai->chaves[j - 1]);
     }
-    for(j = noPai->numChaves + 1; j > i; j --){
+    for(j = noPai->numChaves + 1; j > i; j --){ // reposiciona filhos do pai
         noPai->filhos[j] = noPai->filhos[j - 1];
     }
 
     if(i != noPai->numChaves){ //não inseriu na última posição
-        noNovo->prox = noPai->filhos[i + 2];
+        noNovo->prox = noPai->filhos[i + 2]; // adequa ponteiro de próximo do novo nó
     }
 
     strcpy(noPai->chaves[i], chavePromovida); //adiciona chave promovida após a original
@@ -324,14 +339,14 @@ void insereNoPai(No* noOriginal, char* chavePromovida, No* noNovo){
             strcpy(irmaoPai->chaves[j], noPai->chaves[i]); //distribui chaves
             strcpy(noPai->chaves[i], "NULL0"); //"esvazia" pai "original"
 
-            irmaoPai->filhos[j] = noPai->filhos[i];
+            irmaoPai->filhos[j] = noPai->filhos[i]; // TODO verificar - acho que não vai copiar o último
             noPai->filhos[i] = -1;
         }
 
         irmaoPai->numChaves = ORDEM - posicaoMedia;
         noPai->numChaves = posicaoMedia;
 
-        irmaoPai->RRN = verificaFinalArquivo();
+        armazenaNo(irmaoPai);
 
          for (int k = 0; k <= irmaoPai->numChaves; k++) {
             No *filho = carregaNo(irmaoPai->filhos[k]);
