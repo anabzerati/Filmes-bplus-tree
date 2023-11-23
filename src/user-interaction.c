@@ -210,6 +210,8 @@ void listarFilmes(){
         break;
     
     case 2:
+        buscaRange("AAA00", "ZZZ99");
+
         break;
 
     default:
