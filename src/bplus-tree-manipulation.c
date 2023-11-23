@@ -53,6 +53,7 @@ No *criaNo(){
         novo->dadosRRN[i] = -1;
         novo->filhos[i] = -1;
     }
+    novo->filhos[ORDEM] = -1;
 
     novo->eFolha = -1;
     novo->numChaves = 0;
@@ -76,7 +77,6 @@ long armazenaNo(No *novoNo){
     long byteoffset;
 
     if(novoNo->RRN == -1){ // novo nó da árvore
-        printf("entrou no if de novo nó");
         byteoffset = ftell(fp); // escreve após último registro
         novoNo->RRN = byteoffset;
     } else{ //sobrescrever nó já existente
@@ -102,7 +102,7 @@ long armazenaNo(No *novoNo){
         pos = strlen(buffer);
     }
 
-    for(int i = 0; i < ORDEM; i++){
+    for(int i = 0; i < ORDEM + 1; i++){
         snprintf(buffer + pos, sizeof(buffer) - pos, "%ld@", novoNo->filhos[i]);
         pos = strlen(buffer);
     }
@@ -150,7 +150,7 @@ No *carregaNo(long RRN){
         fscanf(fp, "%ld@", &noLido->dadosRRN[i]);
     }
 
-    for (int i = 0; i < ORDEM; i++) {
+    for (int i = 0; i < ORDEM + 1; i++) {
         fscanf(fp, "%ld@", &noLido->filhos[i]);
     }
 
@@ -162,7 +162,7 @@ No *carregaNo(long RRN){
 }
 
 /* Busca nó que contém a chave */
-No *buscaNo(char* chave){
+No *buscaNo(char *chave){
     No *noAtual = raiz; // inicia busca pela raiz
 
     while(! noAtual->eFolha){ //enquanto não for folha
@@ -275,19 +275,39 @@ void insereNoPai(No* noOriginal, char* chavePromovida, No* noNovo){
 
     No *noPai = carregaNo(noOriginal->pai); //carrega pai (onde ocorre promoção)
     
-    int i;
-    for(i = 0; i < noPai->numChaves + 1; i ++){ //percorre filhos do pai
+    int i = 0;
+    /*for(i = 0; i < noPai->numChaves; i ++){ //percorre filhos do pai
         if(noPai->filhos[i] == noOriginal->RRN){ 
             for (int j = noPai->numChaves; j > i; j--) { //reposiciona chaves do pai
                 strcpy(noPai->chaves[j], noPai->chaves[j - 1]);
-                noPai->dadosRRN[j] = noPai->dadosRRN[j - 1];
+                noPai->filhos[j] = noPai->filhos[j - 1];
             }
 
             strcpy(noPai->chaves[i], chavePromovida); //adiciona chave promovida após a original
             noPai->filhos[i + 1] = noNovo->RRN;
             noPai->numChaves++;
         }
+    }*/
+
+    while(strcmp(noPai->chaves[i], chavePromovida) < 0 && i < noPai->numChaves){
+        i++;
     }
+
+    int j;
+    for(j = noPai->numChaves; j > i; j --){
+        strcpy(noPai->chaves[j], noPai->chaves[j - 1]);
+    }
+    for(j = noPai->numChaves + 1; j > i; j --){
+        noPai->filhos[j] = noPai->filhos[j - 1];
+    }
+
+    if(i != noPai->numChaves){ //não inseriu na última posição
+        noNovo->prox = noPai->filhos[i + 2];
+    }
+
+    strcpy(noPai->chaves[i], chavePromovida); //adiciona chave promovida após a original
+    noPai->filhos[i + 1] = noNovo->RRN;
+    noPai->numChaves++;
 
     if (noPai->numChaves == ORDEM) { //overflow -> criar novo nó e adequar
         No *irmaoPai = criaNo();

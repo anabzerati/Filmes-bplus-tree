@@ -34,7 +34,7 @@ typedef struct{
     int eFolha;
     char chaves[ORDEM][TAM_CHAVE+1]; //array de chaves
     long dadosRRN[ORDEM];
-    long filhos[ORDEM];
+    long filhos[ORDEM + 1];
     int numChaves;
     int pai;
     long prox;
