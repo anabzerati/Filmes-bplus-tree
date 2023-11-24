@@ -218,7 +218,7 @@ void insereNo(char* chave, long RRNChaveDados){
 
     insereNoFolha(noFolha, chave, RRNChaveDados);
 
-    if(noFolha->numChaves == ORDEM){ // overflow (max = ORDEM-1)
+    if(noFolha->numChaves == ORDEM){ // overflow na folha (max = ORDEM-1)
         // cria novo nó (vazio) e inicializa
         No *novoNo = criaNo();
 
@@ -283,6 +283,7 @@ void insereNoFolha(No *folha, char *chave, long RRNChaveDados){
 //TODO terminar
 void insereNoPai(No* noOriginal, char* chavePromovida, No* noNovo){
     if(raiz->RRN == noOriginal->RRN){ // condição inicial e de parada -> overflow na raíz
+        printf("ENTROU NO OVERFLOW DA RAIZ");
         No *novaRaiz = criaNo();
 
         novaRaiz->eFolha = 0;
@@ -301,7 +302,7 @@ void insereNoPai(No* noOriginal, char* chavePromovida, No* noNovo){
         return;
     }
 
-    No *noPai = carregaNo(noOriginal->pai); //carrega pai (onde ocorre promoção)
+    No *noPai = carregaNo(noOriginal->pai); //carrega pai (para promoção)
     
     int i = 0;
     while(strcmp(noPai->chaves[i], chavePromovida) < 0 && i < noPai->numChaves){ // busca posição onde inserir
@@ -316,7 +317,7 @@ void insereNoPai(No* noOriginal, char* chavePromovida, No* noNovo){
         noPai->filhos[j] = noPai->filhos[j - 1];
     }
 
-    if(i != noPai->numChaves){ //não inseriu na última posição
+    if(i != noPai->numChaves && noNovo->eFolha){ //não inseriu na última posição
         noNovo->prox = noPai->filhos[i + 2]; // adequa ponteiro de próximo do novo nó
     }
 
@@ -324,7 +325,11 @@ void insereNoPai(No* noOriginal, char* chavePromovida, No* noNovo){
     noPai->filhos[i + 1] = noNovo->RRN;
     noPai->numChaves++;
 
-    if (noPai->numChaves == ORDEM) { //overflow -> criar novo nó e adequar
+    printf("\nNÓ PAI ");
+    printf("RRN %d é folha %d chave0 %s chave1 %s chave2 %s chave3 %s quant chaves %d RRN0 %d RRNFILHO0 %d RRNFILHO1 %d prox %ld", noPai->RRN, noPai->eFolha, noPai->chaves[0], noPai->chaves[1], noPai->chaves[2], noPai->chaves[3], noPai->numChaves, noPai->dadosRRN[0], noPai->filhos[0], noPai->filhos[1], noPai->prox);
+
+
+    if (noPai->numChaves == ORDEM) { //overflow no nó pai -> split
         No *irmaoPai = criaNo();
 
         irmaoPai->pai = noPai->pai;
@@ -333,31 +338,33 @@ void insereNoPai(No* noOriginal, char* chavePromovida, No* noNovo){
         int posicaoMedia = (int) ceil(ORDEM / 2.0) - 1;
         char novaChavePromovida[TAM_CHAVE + 1];
         strcpy(novaChavePromovida, noPai->chaves[posicaoMedia]);
+        strcpy(noPai->chaves[posicaoMedia], "NULL0");
 
         int i, j;
-        for (i = posicaoMedia + 1, j = 0; i < ORDEM; i++, j++) {
+        for (i = posicaoMedia + 1, j = 0; i < ORDEM; i++, j++) { 
             strcpy(irmaoPai->chaves[j], noPai->chaves[i]); //distribui chaves
             strcpy(noPai->chaves[i], "NULL0"); //"esvazia" pai "original"
-
-            irmaoPai->filhos[j] = noPai->filhos[i]; // TODO verificar - acho que não vai copiar o último
+        }
+        for(i = posicaoMedia + 1, j = 0; i <= ORDEM; i ++, j ++){
+            irmaoPai->filhos[j] = noPai->filhos[i]; 
             noPai->filhos[i] = -1;
         }
 
-        irmaoPai->numChaves = ORDEM - posicaoMedia;
+        irmaoPai->numChaves = ORDEM - posicaoMedia - 1;
         noPai->numChaves = posicaoMedia;
 
         armazenaNo(irmaoPai);
 
-         for (int k = 0; k <= irmaoPai->numChaves; k++) {
+        for (int k = 0; k <= irmaoPai->numChaves; k++) {
             No *filho = carregaNo(irmaoPai->filhos[k]);
             filho->pai = irmaoPai->RRN; //altera pai
             armazenaNo(filho);
         }
-
-        armazenaNo(noPai);
-        armazenaNo(irmaoPai);
-
+        
         insereNoPai(noPai, novaChavePromovida, irmaoPai);
+
+        armazenaNo(irmaoPai);
+        armazenaNo(noPai);
     } else{
         armazenaNo(noPai);
     }
