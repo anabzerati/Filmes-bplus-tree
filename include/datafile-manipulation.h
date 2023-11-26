@@ -10,7 +10,7 @@ int verificaDados();
 /* Insere registro no arquivo de dados. Retorna o byte-offset se a operação teve sucesso e 0 caso não*/
 int insereArquivoDados(Filme *);
 
-Filme *imprimeFilmeChavePrimaria(long);
+Filme *leFilmeChavePrimaria(long);
 
 /* Altera registro no arquivo de dados. Retorna 1 se a operação teve sucesso e 0 caso não*/
 int alteraRegistro(char, char *);

@@ -99,7 +99,6 @@ void busca(){
     int op;
     char tituloaux[MAX_NOME + 1];
     char idaux[TAM_CHAVE + 1];
-    Filme *auxF;
 
     printf("*BUSCA*\n");
     printf("\n1 - Busca por título\n2 - Busca por ID\n");
@@ -119,10 +118,17 @@ void busca(){
             }
 
             for(int i = comeco; i <= final; i ++){ //imprime todos os filmes encontrados
-                printf("nome %s", vetorTitulos[i].chavePrimaria);
-                //int auxIndice = buscaPrimaria(vetorTitulos[i].chavePrimaria, 0, numeroFilmes); //busca pela chave primária
-                //Filme* auxFilme = leFilmeIndicePrimario(auxIndice); //carrega em RAM registro do arquivo de dados
-                //imprimeFilme(auxFilme); //imprime infos na tela
+                No *noAux = buscaNo(vetorTitulos[i].chavePrimaria);
+
+                int j;
+                for(j = 0; j < noAux->numChaves; j ++){
+                    if(! strcmp(noAux->chaves[j], vetorTitulos[i].chavePrimaria)){
+                        break;
+                    }
+                }
+
+                Filme *auxF = leFilmeChavePrimaria(noAux->dadosRRN[j]);
+                imprimeFilme(auxF);
             }
             
             break;
@@ -133,11 +139,16 @@ void busca(){
             scanf(" %s", idaux);
 
             No *encontrado = buscaNo(idaux);
-            // TODO falta percorrer as chaves e encontrar (ou não) a procurada. Depois buscar no arq de dados
-            printf(" RRN %d é folha %d chave0 %s chave1 %s chave2 %s chave3 %s quant chaves %d RRN0 %d RRNFILHO0 %d RRNFILHO1 %d", encontrado->RRN, encontrado->eFolha, encontrado->chaves[0], encontrado->chaves[1], encontrado->chaves[2], encontrado->chaves[3], encontrado->numChaves, encontrado->dadosRRN[0], encontrado->filhos[0], encontrado->filhos[1]);
 
-            //Filme* auxFilme = leFilmeIndicePrimario(auxIndice); //carrega em RAM o registro
-            //imprimeFilme(auxFilme); //imprime na tela informações
+            int i;
+            for(i = 0; i < encontrado->numChaves; i ++){
+                if(! strcmp(encontrado->chaves[i], idaux)){
+                    break;
+                }
+            }
+
+            Filme *auxF = leFilmeChavePrimaria(encontrado->dadosRRN[i]);
+            imprimeFilme(auxF);
 
             break; 
             
@@ -147,7 +158,7 @@ void busca(){
 
 }
 
-/* Lê dados necessários e edita nota de um filme, no arquivo de dados, a partir de sua chave primária
+/* Lê dados necessários e edita nota de um filme, no arquivo de dados, a partir de sua chave primária */
 void editarNota(){
     char idaux[TAM_CHAVE + 1], novaNota;
 
@@ -173,7 +184,7 @@ void editarNota(){
         printf("Não foi possível alterar a nota.");
     }
 
-}*/
+}
 
 /* Percorre todo o arquivo de dados (seguindo a ordem alfabética de diretores), lendo o registro para RAM e imprimindo na tela suas informações */
 void listarFilmes(){

@@ -1,6 +1,7 @@
 /* Implementação das funções definidas na biblioteca */
 
 #include "../include/datafile-manipulation.h"
+#include "../include/bplus-tree-manipulation.h"
 
 extern IndiceSecundario *vetorTitulos;
 extern No *raiz;
@@ -49,7 +50,7 @@ int insereArquivoDados(Filme *novoFilme){
     return auxRRN; 
 }
 
-Filme *imprimeFilmeChavePrimaria(long RRN){
+Filme *leFilmeChavePrimaria(long RRN){
     FILE *fp = fopen(NOME_ARQ_DADOS, "r+");
     char buffer[TAM_REGISTRO + 1];
     Filme *auxF = malloc(sizeof(Filme));
@@ -71,19 +72,25 @@ Filme *imprimeFilmeChavePrimaria(long RRN){
     return auxF;
 }
 
-/* Altera registro no arquivo de dados. Retorna 1 se a operação teve sucesso e 0 caso não
+/* Altera registro no arquivo de dados. Retorna 1 se a operação teve sucesso e 0 caso não */
 int alteraRegistro(char novaNota, char *idFilme){
     FILE *dadosp = fopen(NOME_ARQ_DADOS, "r+");
 
     if(!dadosp){
-        printf("Erro ao abrir o arquivo para alteração");
-
+        perror("Erro ao abrir o arquivo para alteração");
         return 0;
     }
 
-    int pos = buscaPrimaria(idFilme, 0, numeroFilmes); //identifica filme pela chave primária
+    No *encontrado = buscaNo(idFilme); // busca nó que contém chave
 
-    fseek(dadosp, vetorPrimario[pos].RRN, SEEK_SET); //posiciona ponteiro
+    int i;
+    for(i = 0; i < encontrado->numChaves; i ++){
+        if(! strcmp(encontrado->chaves[i], idFilme)){ // busca chave
+            break;
+        }
+    }
+
+    fseek(dadosp, encontrado->dadosRRN[i], SEEK_SET); //posiciona ponteiro
 
     char buffer[TAM_REGISTRO + 1], tituloaux[MAX_NOME + 1], tituloportaux[MAX_NOME + 1], diretoraux[MAX_NOME + 1], anoaux[5], paisaux[MAX_NOME + 1]; //strings auxiliares para leitura de campos
 
@@ -101,8 +108,6 @@ int alteraRegistro(char novaNota, char *idFilme){
 
     fputc(novaNota, dadosp); //atualiza a nota
 
-    fclose(dadosp);
-
     return 1;
 }
 
@@ -118,25 +123,21 @@ void sair(){
 /* Chama função de atualizar índices e libera as memórias alocadas*/
 void sair(){
     FILE *primario = fopen(NOME_INDICE_PRIMARIO, "rb+");
-    FILE *secundario = fopen(NOME_INDICE_TITULO, "r+");
 
-    //fprintf(fp, "%020ld\n", raiz->RRN); 
+    fprintf(primario, "%020ld\n", raiz->RRN); 
+
     atualizaIndices();
-
-    fclose(primario);
 }
 
 /* Atualiza dados dos índices da RAM para o disco. Atualiza flag da header*/
 void atualizaIndices(){
     int i;
 
-    //arquivo de índice primário primeiro
+    //arquivo de índice secundário
     FILE *secundario =  fopen(NOME_INDICE_TITULO, "w");
     fprintf(secundario, "%d %d\n", 1, numeroFilmes); //flag e quantidade de registros 
 
     for(i = 0; i < numeroFilmes; i++){ //para cada registro, imprime os campos de chave primária e RRN
         fprintf(secundario, "%s@%s\n", vetorTitulos[i].titulo, vetorTitulos[i].chavePrimaria);
     }  
-
-    //fclose(secundario);
 }

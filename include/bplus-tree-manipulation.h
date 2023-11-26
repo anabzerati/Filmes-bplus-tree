@@ -42,6 +42,8 @@ void insereNoFolha(No *, char*, long);
 /* Após overflow, insere chave promovida no nó pai, nó interno da árvore*/
 void insereNoPai(No*, char*, No*);
 
+void salvaRaiz();
+
 long verificaFinalArquivo();
 
 /* A partir do índice primário, lê os dados do filme correspondente e retorna uma struct preenchida com as informações*/

@@ -197,7 +197,7 @@ void buscaRange(char *chaveInicial, char *chaveFinal){
     }
 
     while(strcmp(noInicial->chaves[i], chaveFinal) <= 0){
-        //imprimeFilmeChavePrimaria(noInicial->dadosRRN[i]);
+        //leFilmeChavePrimaria(noInicial->dadosRRN[i]);
         printf("CHAVE ATUAL %s ", noInicial->chaves[i]);
         
         i++;
@@ -295,6 +295,7 @@ void insereNoPai(No* noOriginal, char* chavePromovida, No* noNovo){
         armazenaNo(novaRaiz);
         
         raiz = novaRaiz;
+        salvaRaiz();
 
         noOriginal->pai = raiz->RRN; 
         noNovo->pai = raiz->RRN;
@@ -372,6 +373,17 @@ void insereNoPai(No* noOriginal, char* chavePromovida, No* noNovo){
     } else{
         armazenaNo(noPai);
     }
+}
+
+void salvaRaiz(){
+    FILE *fp = fopen(NOME_INDICE_PRIMARIO, "rb+");
+
+    if(! fp){
+        perror("erro ao abrir o arquivo");
+    }
+
+    fseek(fp, 0, SEEK_SET);
+    fprintf(fp, "%020ld", raiz->RRN); 
 }
 
 long verificaFinalArquivo(){
