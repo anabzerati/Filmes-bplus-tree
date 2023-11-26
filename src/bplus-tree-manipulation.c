@@ -299,6 +299,9 @@ void insereNoPai(No* noOriginal, char* chavePromovida, No* noNovo){
         noOriginal->pai = raiz->RRN; 
         noNovo->pai = raiz->RRN;
 
+        armazenaNo(noOriginal); // TODO VERIFICAR NECESSIDADE
+        armazenaNo(noNovo);
+
         return;
     }
 
@@ -358,6 +361,7 @@ void insereNoPai(No* noOriginal, char* chavePromovida, No* noNovo){
         for (int k = 0; k <= irmaoPai->numChaves; k++) {
             No *filho = carregaNo(irmaoPai->filhos[k]);
             filho->pai = irmaoPai->RRN; //altera pai
+            printf("PAI MUDADADADO PARA FILHO %d: %d", irmaoPai->filhos[k], filho->pai);
             armazenaNo(filho);
         }
         
