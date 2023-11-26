@@ -15,7 +15,7 @@ int insereIndiceSecundario(Filme *);
 int removePosicaoSecundario(int pos);
 
 /* Carrega índice secunsário do disco para RAM, retorna vetor de índices ordenado*/
-IndiceSecundario *carregaSecundario();
+void carregaSecundario();
 
 /* Refaz indice secundário a partir do arquivo de dados*/
 void criaSecundario(FILE *, FILE *);

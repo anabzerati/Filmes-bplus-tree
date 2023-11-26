@@ -44,7 +44,7 @@ int insereArquivoDados(Filme *novoFilme){
 
     long auxRRN = ftell(dadosp) - TAM_REGISTRO; //posição onde inseriu
 
-    fclose (dadosp);
+    //fclose (dadosp);
 
     return auxRRN; 
 }
@@ -117,7 +117,26 @@ void sair(){
 
 /* Chama função de atualizar índices e libera as memórias alocadas*/
 void sair(){
-    FILE *fp = fopen(NOME_INDICE_PRIMARIO, "rb+");
-    fprintf(fp, "%020ld\n", raiz->RRN);    
-    fclose(fp);
+    FILE *primario = fopen(NOME_INDICE_PRIMARIO, "rb+");
+    FILE *secundario = fopen(NOME_INDICE_TITULO, "r+");
+
+    //fprintf(fp, "%020ld\n", raiz->RRN); 
+    atualizaIndices();
+
+    fclose(primario);
+}
+
+/* Atualiza dados dos índices da RAM para o disco. Atualiza flag da header*/
+void atualizaIndices(){
+    int i;
+
+    //arquivo de índice primário primeiro
+    FILE *secundario =  fopen(NOME_INDICE_TITULO, "w");
+    fprintf(secundario, "%d %d\n", 1, numeroFilmes); //flag e quantidade de registros 
+
+    for(i = 0; i < numeroFilmes; i++){ //para cada registro, imprime os campos de chave primária e RRN
+        fprintf(secundario, "%s@%s\n", vetorTitulos[i].titulo, vetorTitulos[i].chavePrimaria);
+    }  
+
+    //fclose(secundario);
 }

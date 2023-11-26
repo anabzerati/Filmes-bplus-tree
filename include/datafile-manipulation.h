@@ -18,4 +18,7 @@ int alteraRegistro(char, char *);
 /* Chama função de atualizar índices e libera as memórias alocadas*/
 void sair();
 
+/* Atualiza dados dos índices da RAM para o disco. Atualiza flag da header*/
+void atualizaIndices();
+
 #endif //DATAFILEMANIPULATION_H

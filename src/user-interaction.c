@@ -83,7 +83,9 @@ void insercao(){
     Filme *aux = leDadosFilme(); //pega info com usuário
 
     //inserir no arq de dados (pegar byteoffset), na indice sec e na árvore
-    insereNo(aux->chavePrimaria, 0);
+    long rrnDados = insereArquivoDados(aux);
+    insereNo(aux->chavePrimaria, rrnDados);
+    insereIndiceSecundario(aux);
 
     /*if(insereArquivoDados(aux) == -1 || insereIndiceSecundario(aux) == -1){
         printf("\nNão foi possível inserir");
@@ -92,12 +94,11 @@ void insercao(){
     }*/
 }
 
-/* Lê dados para a busca, chama a função para realizar a busca binária e, por fim, caso seja encontrado um filme, lê seus dados do arquivo de dados e imprime na tela. Caso não encontre, imrpime mensagem de erro
+/* Lê dados para a busca, chama a função para realizar a busca binária e, por fim, caso seja encontrado um filme, lê seus dados do arquivo de dados e imprime na tela. Caso não encontre, imrpime mensagem de erro */
 void busca(){
     int op;
     char tituloaux[MAX_NOME + 1];
     char idaux[TAM_CHAVE + 1];
-    IndicePrimario * auxP;
     Filme *auxF;
 
     printf("*BUSCA*\n");
@@ -118,44 +119,31 @@ void busca(){
             }
 
             for(int i = comeco; i <= final; i ++){ //imprime todos os filmes encontrados
-                int auxIndice = buscaPrimaria(vetorTitulos[i].chavePrimaria, 0, numeroFilmes); //busca pela chave primária
-                Filme* auxFilme = leFilmeIndicePrimario(auxIndice); //carrega em RAM registro do arquivo de dados
-                imprimeFilme(auxFilme); //imprime infos na tela
+                printf("nome %s", vetorTitulos[i].chavePrimaria);
+                //int auxIndice = buscaPrimaria(vetorTitulos[i].chavePrimaria, 0, numeroFilmes); //busca pela chave primária
+                //Filme* auxFilme = leFilmeIndicePrimario(auxIndice); //carrega em RAM registro do arquivo de dados
+                //imprimeFilme(auxFilme); //imprime infos na tela
             }
             
             break;
 
         case 2:
+
             printf("\nInsira o ID do filme: ");
             scanf(" %s", idaux);
 
-            int auxIndice = buscaPrimaria(idaux, 0, numeroFilmes); //busca filme com o índice
+            No *encontrado = buscaNo(idaux);
+            // TODO falta percorrer as chaves e encontrar (ou não) a procurada. Depois buscar no arq de dados
+            printf(" RRN %d é folha %d chave0 %s chave1 %s chave2 %s chave3 %s quant chaves %d RRN0 %d RRNFILHO0 %d RRNFILHO1 %d", encontrado->RRN, encontrado->eFolha, encontrado->chaves[0], encontrado->chaves[1], encontrado->chaves[2], encontrado->chaves[3], encontrado->numChaves, encontrado->dadosRRN[0], encontrado->filhos[0], encontrado->filhos[1]);
 
-            if(auxIndice == -1){
-                printf("Não foi encontrado o filme de ID %s\n", idaux);
-                break;
-            }
-
-            Filme* auxFilme = leFilmeIndicePrimario(auxIndice); //carrega em RAM o registro
-            imprimeFilme(auxFilme); //imprime na tela informações
+            //Filme* auxFilme = leFilmeIndicePrimario(auxIndice); //carrega em RAM o registro
+            //imprimeFilme(auxFilme); //imprime na tela informações
 
             break; 
             
         default:
             printf("Opção inválida!\n");
     }
-
-}*/
-
-void busca(){
-    char idaux[TAM_CHAVE + 1];
-
-    printf("\nInsira o ID do filme: ");
-    scanf(" %s", idaux);
-
-    No *encontrado = buscaNo(idaux);
-    // TODO falta percorrer as chaves e encontrar (ou não) a procurada. Depois buscar no arq de dados
-    printf(" RRN %d é folha %d chave0 %s chave1 %s chave2 %s chave3 %s quant chaves %d RRN0 %d RRNFILHO0 %d RRNFILHO1 %d", encontrado->RRN, encontrado->eFolha, encontrado->chaves[0], encontrado->chaves[1], encontrado->chaves[2], encontrado->chaves[3], encontrado->numChaves, encontrado->dadosRRN[0], encontrado->filhos[0], encontrado->filhos[1]);
 
 }
 

@@ -12,8 +12,16 @@ int numeroFilmes = 0; //quantidade de registros dos índices
 int main(){
     int i;
 
-    /*vetorTitulos = carregaSecundario(); //carrega vetor com dados do índice secundário de título*/
+    carregaSecundario(); //carrega vetor com dados do índice secundário de título
+    printf("CARREGOU");
     carregaRaiz();
+
+    printf("numero de filmes %d", numeroFilmes);
+    for(int i = 0; i < numeroFilmes; i ++){
+        printf("filme %s", vetorTitulos[i].titulo);
+    }
+
+    printf("\n raiz rrn %d", raiz->RRN);
 
     int op = 1;
     while(op){
@@ -25,10 +33,6 @@ int main(){
         case 1: //inserir novo filme
             insercao();
             break;
-
-        //case 2: //remover filme
-        //    remocao(&ponteirosArquivos);
-        //    break;
 
         case 3: //buscar filme por chave primária
             busca();
@@ -48,6 +52,7 @@ int main(){
 
         case 0: //sair
             sair(); 
+            exit(0);
             break;
             
         default:
@@ -56,27 +61,9 @@ int main(){
         
     }
 
-    /*typedef struct{
-    int RRN;
-    int eFolha;
-    char chaves[ORDEM][TAM_CHAVE+1]; //array de chaves
-    int dadosRRN[ORDEM];
-    int filhos[ORDEM];
-    int numChaves;
-    int pai;
-    int prox;
-} No;*/
-
-    printf("RRN %d é folha %d chave0 %s chave1 %s chave2 %s chave3 %s quant chaves %d RRN0 %d RRNFILHO0 %d RRNFILHO1 %d", raiz->RRN, raiz->eFolha, raiz->chaves[0], raiz->chaves[1], raiz->chaves[2], raiz->chaves[3], raiz->numChaves, raiz->dadosRRN[0], raiz->filhos[0], raiz->filhos[1]);
-
-    printf("\nFILHO ESQ ");
-    No *teste = carregaNo(raiz->filhos[0]);
-    printf("RRN %d é folha %d chave0 %s chave1 %s chave2 %s chave3 %s quant chaves %d RRN0 %d RRNFILHO0 %d RRNFILHO1 %d prox %ld", teste->RRN, teste->eFolha, teste->chaves[0], teste->chaves[1], teste->chaves[2], teste->chaves[3], teste->numChaves, teste->dadosRRN[0], teste->filhos[0], teste->filhos[1], teste->prox);
-
-    printf("\nFILHO DIR ");
-    No *teste2 = carregaNo(raiz->filhos[1]);
-    printf("RRN %d é folha %d chave0 %s chave1 %s chave2 %s chave3 %s quant chaves %d RRN0 %d RRNFILHO0 %d RRNFILHO1 %d", teste2->RRN, teste2->eFolha, teste2->chaves[0], teste2->chaves[1], teste2->chaves[2], teste2->chaves[3], teste2->numChaves, teste2->dadosRRN[0], teste2->filhos[0], teste2->filhos[1]);
-
-    return 0;
+    printf("saiu do while");
+    
+    exit(1);
+    //return 0;
 }
 

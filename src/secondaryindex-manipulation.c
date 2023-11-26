@@ -6,7 +6,8 @@ extern IndiceSecundario *vetorTitulos;
 extern int numeroFilmes;
 
 /* Carrega índice secunsário do disco para RAM, retorna vetor de índices ordenado*/
-IndiceSecundario *carregaSecundario(){
+void carregaSecundario(){
+    printf("ENTROU NO CARREGA SEC\n");
     char bufferNom[MAX_NOME + 1];
     int i = 0, flag;
     FILE *dadosp, *fp;
@@ -24,42 +25,51 @@ IndiceSecundario *carregaSecundario(){
     } 
     
     //leitura do header
-    fscanf(fp, "%d", &flag); //flag de consistência
+    fscanf(fp, "%d %d", &flag, &numeroFilmes); //flag de consistência
+    printf("FLAG LIDA %d\n", flag);
 
     if(flag == -1){ //arquivo vazio
         numeroFilmes = 0;
 
-        fprintf(fp, "%d %d", 0, 0); //flag e número de registros
+        fprintf(fp, "%d %d\n", 0, 0); //flag e número de registros
 
-        return NULL;
+        return;
     } else if(flag == 0){ //inconsistência entre índice e arquivo de dados
         criaSecundario(dadosp, fp);
     }
 
     rewind(fp);
     fscanf(fp, "%d %d\n", &flag, &numeroFilmes); //dados do header
+    printf("FLAG E NUM FILMES %d %d\n", flag, numeroFilmes);
 
     vetorTitulos = malloc(numeroFilmes * sizeof(IndiceSecundario)); //aloca vetor do índice secundário
+    if(!vetorTitulos){
+        perror("erro ao alocar vetor");
+    } else{
+        printf("alocou");
+    }
 
     for(i = 0; i < numeroFilmes; i ++){ //para cada registro
         //lê título e chave primária
         char linha[TAM_CHAVE + MAX_NOME + 1];
         fgets(linha, MAX_NOME + TAM_CHAVE + 1, fp); //lê linha
+        printf("LINHA LIDA %d %s\n", i, linha);
 
         if (sscanf(linha, "%[^@]@%s", vetorTitulos[i].titulo, vetorTitulos[i].chavePrimaria) != 2) { //lê campos
-            printf("Erro ao ler os campos.\n");
-        } 
+            perror("Erro ao ler os campos.\n");
+        } else {
+            printf("Registro lido: %s - %s\n", vetorTitulos[i].titulo, vetorTitulos[i].chavePrimaria);
+        }
     }
 
     ordenaSecundario(numeroFilmes);
+    printf("ORDENOU");
 
-    rewind(fp);
-    fprintf(fp, "%d", 0); //flag = 0
+    //rewind(fp);
+    //fprintf(fp, "%d", 0); //flag = 0
 
-    fclose(fp);
-    fclose(dadosp);
-
-    return vetorTitulos;
+    //fclose(fp);
+    //fclose(dadosp);
 }
 
 /* Refaz indice secundário a partir do arquivo de dados*/
@@ -110,11 +120,7 @@ int insereIndiceSecundario(Filme *novoFilme){
     return 1; 
 }
 
-void ordenaSecundario(){
-    printf("ordenado");
-}
-
-/* Ordena o vetor de índices secundários considerando o título. Insertion Sort
+/* Ordena o vetor de índices secundários considerando o título. Insertion Sort*/
 void ordenaSecundario(){
     int i, j;
     IndiceSecundario aux;
@@ -123,7 +129,7 @@ void ordenaSecundario(){
         aux = vetorTitulos[i];
         j = i - 1;
 
-        while( j >= 0 && strcmp(vetorTitulos[j].titulo, aux.titulo) > 0){ //utiliza título para ordenar
+        while(j >= 0 && strcmp(vetorTitulos[j].titulo, aux.titulo) > 0){ //utiliza título para ordenar
             vetorTitulos[j + 1] = vetorTitulos[j];
             j --;
         }
@@ -132,7 +138,8 @@ void ordenaSecundario(){
     }
 }
 
-/* Busca filme pelo índice secundário a partir do título e retorna os indices da primeira e útlima aparição dessa chave secundária. Caso não haja registro com esse ID, retorna -1 em j
+
+/* Busca filme pelo índice secundário a partir do título e retorna os indices da primeira e útlima aparição dessa chave secundária. Caso não haja registro com esse ID, retorna -1 em j */
 void buscaSecundaria(char *titulo, int *i, int *j){
     int mid, val;
 
@@ -142,8 +149,8 @@ void buscaSecundaria(char *titulo, int *i, int *j){
         mid = (menor + (maior - menor)/2);
         val = strcmp(vetorTitulos[mid].titulo, titulo);
 
-        if(val == 0){ //encontrou um filme
-            //agora, é necessário buscar os demais filmes com o mesmo título
+        if(val == 0){ // encontrou um filme
+            // buscar os demais filmes com o mesmo título
             *i = *j = mid;
                    
             while(*i > 0 && strcmp(vetorTitulos[(*i) - 1].titulo, titulo) == 0){ //buscamos a primeira aparição no vetor
