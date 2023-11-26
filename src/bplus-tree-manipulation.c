@@ -2,6 +2,7 @@
 
 #include "../include/bplus-tree-manipulation.h"
 #include "../include/datafile-manipulation.h"
+#include "../include/user-interaction.h"
 
 // "importando" variáveis globais da main
 extern No* raiz;
@@ -197,8 +198,8 @@ void buscaRange(char *chaveInicial, char *chaveFinal){
     }
 
     while(strcmp(noInicial->chaves[i], chaveFinal) <= 0){
-        //leFilmeChavePrimaria(noInicial->dadosRRN[i]);
-        printf("CHAVE ATUAL %s ", noInicial->chaves[i]);
+        Filme *aux = leFilmeChavePrimaria(noInicial->dadosRRN[i]);
+        imprimeFilme(aux);
         
         i++;
         if(i == noInicial->numChaves){ // percorreu todas as chaves, carrega próximo
