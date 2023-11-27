@@ -68,7 +68,7 @@ Filme *leDadosFilme(){
     return aux;
 }
 
-/* Recebe uma struct com dados do filme e os imprime na tela*/
+/* Recebe uma struct com dados do filme e os imprime na tela */
 void imprimeFilme(Filme *aux){
     printf("\n*Filme %s*", aux->chavePrimaria);
     printf("\nTítulo Original: %s\nTítulo em português: %s", aux->tituloOriginal, aux->tituloPortugues);
@@ -78,7 +78,7 @@ void imprimeFilme(Filme *aux){
     free(aux);
 }
 
-/* Faz o intermédio entre ler os dados do filme e ser inserido e chamar a função de inserir. Verifica sucesso e imprime uma mensagem na tela*/
+/* Faz o intermédio entre ler os dados do filme e chamar a função de inserir */
 void insercao(){
     Filme *aux = leDadosFilme(); //pega info com usuário
 
@@ -92,7 +92,7 @@ void insercao(){
     }
 }
 
-/* Lê dados para a busca, chama a função para realizar a busca binária e, por fim, caso seja encontrado um filme, lê seus dados do arquivo de dados e imprime na tela. Caso não encontre, imrpime mensagem de erro */
+/* Lê dados para a busca, chama a função que a realiza e, por fim, caso seja encontrado um filme, lê seus dados do arquivo de dados e imprime na tela. Caso não encontre, imrpime mensagem de erro*/
 void busca(){
     int op;
     char tituloaux[MAX_NOME + 1];
@@ -136,10 +136,9 @@ void busca(){
             scanf(" %s", idaux);
 
             No *encontrado = buscaNo(idaux);
-            printf("\nno encontrado na busca %d %s\n", encontrado->RRN, encontrado->chaves[0]);
 
             int i;
-            for(i = 0; i < encontrado->numChaves; i ++){
+            for(i = 0; i < encontrado->numChaves; i ++){ // busca chave no nó
                 if(!strcmp(encontrado->chaves[i], idaux)){
                     break;
                 }
@@ -189,7 +188,7 @@ void editarNota(){
 
 }
 
-/* Percorre todo o arquivo de dados (seguindo a ordem alfabética de diretores), lendo o registro para RAM e imprimindo na tela suas informações */
+/* Percorre o arquivo de dados (seguindo a ordem alfabética de diretores), lendo o registro para RAM e imprimindo na tela suas informações. Permite busca em range */
 void listarFilmes(){
     int i, op;
 
@@ -220,14 +219,5 @@ void listarFilmes(){
         printf("Opção inválida!");
         break;
     }
-
-    /*
-    FILE *dadosp = fopen(NOME_ARQ_DADOS, "r+");
-
-    printf("\n*LISTA DE FILMES CADASTRADOS*\n");
-    for(i = 0; i < numeroFilmes; i ++){
-        Filme* auxFilme = leFilmeIndicePrimario(i); //carrega em RAM o filme do índice i do índice primário
-        imprimeFilme(auxFilme); //imprime informações na tela} 
-    */
 
 }

@@ -26,7 +26,6 @@ void carregaSecundario(){
     
     //leitura do header
     fscanf(fp, "%d %d", &flag, &numeroFilmes); //flag de consistência
-    printf("FLAG LIDA %d\n", flag);
 
     if(flag == -1){ //arquivo vazio
         numeroFilmes = 0;
@@ -40,14 +39,12 @@ void carregaSecundario(){
 
     rewind(fp);
     fscanf(fp, "%d %d\n", &flag, &numeroFilmes); //dados do header
-    printf("FLAG E NUM FILMES %d %d\n", flag, numeroFilmes);
 
     vetorTitulos = malloc(numeroFilmes * sizeof(IndiceSecundario)); //aloca vetor do índice secundário
     if(!vetorTitulos){
         perror("erro ao alocar vetor");
-    } else{
-        printf("alocou");
-    }
+        return;
+    } 
 
     for(i = 0; i < numeroFilmes; i ++){ //para cada registro
         //lê título e chave primária
@@ -57,19 +54,11 @@ void carregaSecundario(){
 
         if (sscanf(linha, "%[^@]@%s", vetorTitulos[i].titulo, vetorTitulos[i].chavePrimaria) != 2) { //lê campos
             perror("Erro ao ler os campos.\n");
-        } else {
-            printf("Registro lido: %s - %s\n", vetorTitulos[i].titulo, vetorTitulos[i].chavePrimaria);
-        }
+            return;
+        } 
     }
 
     ordenaSecundario(numeroFilmes);
-    printf("ORDENOU");
-
-    //rewind(fp);
-    //fprintf(fp, "%d", 0); //flag = 0
-
-    //fclose(fp);
-    //fclose(dadosp);
 }
 
 /* Refaz indice secundário a partir do arquivo de dados*/
@@ -101,7 +90,7 @@ void criaSecundario(FILE *dadosp, FILE *secundariop){
     }
 }
 
-int insereIndiceSecundario(Filme *novoFilme){
+int insereIndiceSecundario(Filme *novoFilme){ 
     IndiceSecundario * novovetorTitulos = realloc(vetorTitulos, numeroFilmes * sizeof(IndiceSecundario)); //realocando vetor de títulos
 
     if(!novovetorTitulos){ //verificando se a memória foi realocada
@@ -172,32 +161,6 @@ void buscaSecundaria(char *titulo, int *i, int *j){
     *j = -1; //se não encontrou filme 
     
 }
-
-/* Atualiza dados dos índices da RAM para o disco. Atualiza flag da header
-void atualizaIndices(){
-    int i;
-
-    //arquivo de índice primário primeiro
-    FILE *primario =  fopen(NOME_INDICE_PRIMARIO, "w");
-    fprintf(primario, "%d %d\n", 1, numeroFilmes); //flag e quantidade de registros 
-
-    for(i = 0; i < numeroFilmes; i++){ //para cada registro, imprime os campos de chave primária e RRN
-        fprintf(primario, "%s %ld ", vetorPrimario[i].chavePrimaria, vetorPrimario[i].RRN);
-    }  
-
-    fclose(primario);
-
-   //arquivo de índice secundário
-    FILE *secundario = fopen(NOME_INDICE_TITULO, "w");
-    fprintf(secundario, "%d\n", 1); //flag
-
-    for(i = 0; i < numeroFilmes; i++){ //para cada registro, imprime os campos de título e chave primária
-        fprintf(secundario, "%s@%s\n", vetorTitulos[i].titulo, vetorTitulos[i].chavePrimaria);
-    }  
-    
-    fclose(secundario);
-}
-*/
 
 /* Função que verifica se o índice secundário existe. Retorna 0 se não existir e 1 se existir*/
 int verificaSecundario(){

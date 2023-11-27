@@ -6,22 +6,14 @@
 
 /* variáveis globais */
 No *raiz = NULL;
-IndiceSecundario *vetorTitulos = NULL; //índice secundário em RAM
-int numeroFilmes = 0; //quantidade de registros dos índices
+IndiceSecundario *vetorTitulos = NULL; // índice secundário em RAM
+int numeroFilmes = 0; // quantidade de registros dos índices
 
 int main(){
     int i;
 
-    carregaSecundario(); //carrega vetor com dados do índice secundário de título
-    printf("CARREGOU");
-    carregaRaiz();
-
-    printf("numero de filmes %d", numeroFilmes);
-    for(int i = 0; i < numeroFilmes; i ++){
-        printf("filme %s", vetorTitulos[i].titulo);
-    }
-
-    printf("\n raiz rrn %d", raiz->RRN);
+    carregaSecundario(); // carrega vetor com dados do índice secundário de título
+    carregaRaiz(); // carrega a raíz da árvore b+
 
     int op = 1;
     while(op){
@@ -30,19 +22,19 @@ int main(){
         scanf("%d", &op);
      
         switch (op) {
-        case 1: //inserir novo filme
+        case 1: // inserir novo filme
             insercao();
             break;
 
-        case 2: //buscar filme por chave primária
+        case 2: // buscar filme por chave primária
             busca();
             break;
 
-        case 3: //editar nota do filme
+        case 3: // editar nota do filme
             editarNota();
             break;
 
-        case 4: //listar filmes
+        case 4: // listar filmes
             listarFilmes();
             break;
 
@@ -56,10 +48,7 @@ int main(){
         }
         
     }
-
-    printf("saiu do while");
     
-    exit(1);
-    //return 0;
+    return 0;
 }
 

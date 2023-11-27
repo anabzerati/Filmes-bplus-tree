@@ -26,7 +26,4 @@ void ordenaSecundario();
 /* Busca filme pelo índice secundário a partir do título e retorna os indices da primeira e útlima aparição dessa chave secundária. Caso não haja registro com esse ID, retorna -1 em j*/
 void buscaSecundaria( char *titulo, int *, int *);
 
-/* Atualiza dados dos índices da RAM para o disco. Atualiza flag da header*/
-void atualizaIndices();
-
 #endif //SECONDARYINDEXMANIPULATION_H

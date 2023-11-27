@@ -121,8 +121,6 @@ long armazenaNo(No *novoNo){
     fputs(buffer, fp);
     printf("RRN APÓS ESCREVER NÓ %d", ftell(fp));
 
-    //fwrite(novoNo, sizeof(No), 1, fp);
-
     fclose(fp);
 
     return byteoffset;
@@ -197,12 +195,12 @@ void buscaRange(char *chaveInicial, char *chaveFinal){
         i ++;
     }
 
-    while(strcmp(noInicial->chaves[i], chaveFinal) <= 0){
-        Filme *aux = leFilmeChavePrimaria(noInicial->dadosRRN[i]);
+    while(strcmp(noInicial->chaves[i], chaveFinal) <= 0){ // enquanto não chegou à última chave
+        Filme *aux = leFilmeChavePrimaria(noInicial->dadosRRN[i]); // carrega filme
         imprimeFilme(aux);
         
         i++;
-        if(i == noInicial->numChaves){ // percorreu todas as chaves, carrega próximo
+        if(i == noInicial->numChaves){ // percorreu todas as chaves, carrega próximo nó
             i = 0;
             noInicial = carregaNo(noInicial->prox);
             if(! noInicial){ // acabaram os elementos
@@ -213,7 +211,6 @@ void buscaRange(char *chaveInicial, char *chaveFinal){
 }
 
 /* Insere novo nó na arvore, considerando a chave primária do filme */
-// TODO verificar se chave já existe
 void insereNo(char* chave, long RRNChaveDados){
     No *noFolha = buscaNo(chave);
 
@@ -286,10 +283,9 @@ void insereNoFolha(No *folha, char *chave, long RRNChaveDados){
 }
 
 /* Após overflow, insere chave promovida no nó pai, nó interno da árvore*/
-//TODO terminar
 void insereNoPai(No* noOriginal, char* chavePromovida, No* noNovo){
     if(raiz->RRN == noOriginal->RRN){ // condição inicial e de parada -> overflow na raíz
-        printf("ENTROU NO OVERFLOW DA RAIZ");
+        // cria e inicializa nova raíz
         No *novaRaiz = criaNo();
 
         novaRaiz->eFolha = 0;
@@ -300,13 +296,13 @@ void insereNoPai(No* noOriginal, char* chavePromovida, No* noNovo){
 
         armazenaNo(novaRaiz);
         
-        raiz = novaRaiz;
+        raiz = novaRaiz; // atualiza raíz em RAM
         salvaRaiz();
 
         noOriginal->pai = raiz->RRN; 
         noNovo->pai = raiz->RRN;
 
-        armazenaNo(noOriginal); // TODO VERIFICAR NECESSIDADE
+        armazenaNo(noOriginal);
         armazenaNo(noNovo);
 
         return;
@@ -334,10 +330,6 @@ void insereNoPai(No* noOriginal, char* chavePromovida, No* noNovo){
     strcpy(noPai->chaves[i], chavePromovida); //adiciona chave promovida após a original
     noPai->filhos[i + 1] = noNovo->RRN;
     noPai->numChaves++;
-
-    printf("\nNÓ PAI ");
-    printf("RRN %d é folha %d chave0 %s chave1 %s chave2 %s chave3 %s quant chaves %d RRN0 %d RRNFILHO0 %d RRNFILHO1 %d prox %ld", noPai->RRN, noPai->eFolha, noPai->chaves[0], noPai->chaves[1], noPai->chaves[2], noPai->chaves[3], noPai->numChaves, noPai->dadosRRN[0], noPai->filhos[0], noPai->filhos[1], noPai->prox);
-
 
     if (noPai->numChaves == ORDEM) { //overflow no nó pai -> split
         No *irmaoPai = criaNo();
@@ -372,7 +364,7 @@ void insereNoPai(No* noOriginal, char* chavePromovida, No* noNovo){
             armazenaNo(filho);
         }
         
-        insereNoPai(noPai, novaChavePromovida, irmaoPai);
+        insereNoPai(noPai, novaChavePromovida, irmaoPai); // chamada recursiva para outra promoção
 
         armazenaNo(irmaoPai);
         armazenaNo(noPai);
@@ -381,6 +373,7 @@ void insereNoPai(No* noOriginal, char* chavePromovida, No* noNovo){
     }
 }
 
+/* atualiza o RRN da raíz no arquivo que mantém a árvore */
 void salvaRaiz(){
     FILE *fp = fopen(NOME_INDICE_PRIMARIO, "rb+");
 
@@ -389,44 +382,5 @@ void salvaRaiz(){
     }
 
     fseek(fp, 0, SEEK_SET);
-    fprintf(fp, "%020ld", raiz->RRN); 
+    fprintf(fp, "%020ld", raiz->RRN); // sobrescreve
 }
-
-long verificaFinalArquivo(){
-    FILE *fp = fopen(NOME_INDICE_PRIMARIO, "rb");
-
-    if(! fp){
-        perror("Erro ao abrir o arquivo");
-        return -1;
-    }
-
-    fseek(fp, 0, SEEK_END);
-    long RRNFinal = ftell(fp);
-
-    fclose(fp);
-
-    return RRNFinal; 
-}
-
-
-// TODO ler nó/página
-/* A partir do índice primário, lê os dados do filme correspondente e retorna uma struct preenchida com as informações
-Filme *leFilmeIndicePrimario(int pos){
-    char buffer[TAM_REGISTRO + 1];
-    Filme *auxF = malloc(sizeof(Filme));
-
-    FILE *dadosp = fopen(NOME_ARQ_DADOS, "r+");
-
-    fseek(dadosp, vetorPrimario[pos].RRN, SEEK_SET); //posiciona ponteiro
-    fgets(buffer, TAM_REGISTRO, dadosp); //lê registro
-
-    //leitura formatada da string, atribuindo os campos do registro às variáveis da struct
-    if (sscanf(buffer, "%[^@]@%[^@]@%[^@]@%[^@]@%[^@]@%[^@]@%c", auxF->chavePrimaria, auxF->tituloOriginal, auxF->tituloPortugues, auxF->diretor, auxF->anoLancamento, auxF->pais, &auxF->nota) != 7) {
-        printf("Erro ao ler os campos.\n");
-    } 
-
-    fclose(dadosp);
-
-    return auxF;
-}
-*/

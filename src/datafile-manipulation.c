@@ -11,7 +11,7 @@ extern int numeroFilmes;
 int verificaDados(){
     FILE *fp;
 
-    if((fp = fopen(NOME_ARQ_DADOS, "r+")) == NULL){ //não existe arquivo;
+    if((fp = fopen(NOME_ARQ_DADOS, "r+")) == NULL){ //não existe arquivo
         return 0;
     }
 
@@ -19,7 +19,8 @@ int verificaDados(){
     return 1;
 }
 
-int insereArquivoDados(Filme *novoFilme){
+/* Insere registro no arquivo de dados. Retorna o byte-offset se a operação teve sucesso e 0 caso não*/
+int insereArquivoDados(Filme *novoFilme){ 
     char buffer[TAM_REGISTRO + 1];
 
     FILE *dadosp = fopen(NOME_ARQ_DADOS, "a+");
@@ -45,11 +46,10 @@ int insereArquivoDados(Filme *novoFilme){
 
     long auxRRN = ftell(dadosp) - TAM_REGISTRO; //posição onde inseriu
 
-    //fclose (dadosp);
-
     return auxRRN; 
 }
 
+/* A partir do RRN obtido pela chave primária, lê registro e returna struct com dados do filme */
 Filme *leFilmeChavePrimaria(long RRN){
     FILE *fp = fopen(NOME_ARQ_DADOS, "r+");
     char buffer[TAM_REGISTRO + 1];
@@ -111,26 +111,19 @@ int alteraRegistro(char novaNota, char *idFilme){
     return 1;
 }
 
-/* Chama função de atualizar índices e libera as memórias alocadas
-void sair(){
-    atualizaIndices();
-
-    free(vetorPrimario);
-    free(vetorTitulos);
-}
-*/
-
-/* Chama função de atualizar índices e libera as memórias alocadas*/
+/* Chama função de atualizar índice secundário e libera as memórias alocadas*/
 void sair(){
     FILE *primario = fopen(NOME_INDICE_PRIMARIO, "rb+");
 
     fprintf(primario, "%020ld\n", raiz->RRN); 
 
-    atualizaIndices();
+    atualizaIndice();
+
+    free(vetorTitulos);
 }
 
-/* Atualiza dados dos índices da RAM para o disco. Atualiza flag da header*/
-void atualizaIndices(){
+/* Atualiza dados do índice secundário da RAM para o disco. Atualiza flag da header*/
+void atualizaIndice(){
     int i;
 
     //arquivo de índice secundário
