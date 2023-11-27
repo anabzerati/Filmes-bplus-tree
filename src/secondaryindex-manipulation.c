@@ -7,7 +7,6 @@ extern int numeroFilmes;
 
 /* Carrega índice secunsário do disco para RAM, retorna vetor de índices ordenado*/
 void carregaSecundario(){
-    printf("ENTROU NO CARREGA SEC\n");
     char bufferNom[MAX_NOME + 1];
     int i = 0, flag;
     FILE *dadosp, *fp;
@@ -50,7 +49,6 @@ void carregaSecundario(){
         //lê título e chave primária
         char linha[TAM_CHAVE + MAX_NOME + 1];
         fgets(linha, MAX_NOME + TAM_CHAVE + 1, fp); //lê linha
-        printf("LINHA LIDA %d %s\n", i, linha);
 
         if (sscanf(linha, "%[^@]@%s", vetorTitulos[i].titulo, vetorTitulos[i].chavePrimaria) != 2) { //lê campos
             perror("Erro ao ler os campos.\n");
