@@ -82,16 +82,14 @@ void imprimeFilme(Filme *aux){
 void insercao(){
     Filme *aux = leDadosFilme(); //pega info com usuário
 
-    //inserir no arq de dados (pegar byteoffset), na indice sec e na árvore
-    long rrnDados = insereArquivoDados(aux);
-    insereNo(aux->chavePrimaria, rrnDados);
-    insereIndiceSecundario(aux);
+    long rrnDados = insereArquivoDados(aux); // insere no arq de dados
 
-    /*if(insereArquivoDados(aux) == -1 || insereIndiceSecundario(aux) == -1){
-        printf("\nNão foi possível inserir");
+    if(rrnDados == -1){
+        perror("Erro ao inserir");
     } else{
-        printf("\nFilme '%s' inserido com sucesso!", aux->tituloOriginal);
-    }*/
+        insereNo(aux->chavePrimaria, rrnDados); // insere na árvore
+        insereIndiceSecundario(aux); // insere no índice secundário
+    }
 }
 
 /* Lê dados para a busca, chama a função para realizar a busca binária e, por fim, caso seja encontrado um filme, lê seus dados do arquivo de dados e imprime na tela. Caso não encontre, imrpime mensagem de erro */
@@ -134,17 +132,22 @@ void busca(){
             break;
 
         case 2:
-
             printf("\nInsira o ID do filme: ");
             scanf(" %s", idaux);
 
             No *encontrado = buscaNo(idaux);
+            printf("\nno encontrado na busca %d %s\n", encontrado->RRN, encontrado->chaves[0]);
 
             int i;
             for(i = 0; i < encontrado->numChaves; i ++){
-                if(! strcmp(encontrado->chaves[i], idaux)){
+                if(!strcmp(encontrado->chaves[i], idaux)){
                     break;
                 }
+            }
+
+            if(i == encontrado->numChaves){ // não achou no nó
+                printf("Não foi encontrado um filme de ID %s\n", idaux);
+                break;
             }
 
             Filme *auxF = leFilmeChavePrimaria(encontrado->dadosRRN[i]);

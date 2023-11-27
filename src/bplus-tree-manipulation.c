@@ -267,6 +267,11 @@ void insereNoFolha(No *folha, char *chave, long RRNChaveDados){
             i++;
         }
 
+        if(strcmp(chave, folha->chaves[i]) == 0){
+            perror("Chave já inserida");
+            return;
+        }
+
         for (int j = folha->numChaves; j > i; j--) { //reposiciona chaves
             strcpy(folha->chaves[j], folha->chaves[j - 1]);
             folha->dadosRRN[j] = folha->dadosRRN[j - 1];
