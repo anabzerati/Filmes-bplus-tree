@@ -40,7 +40,6 @@ int main(){
 
         case 0: //sair
             sair(); 
-            exit(0);
             break;
             
         default:

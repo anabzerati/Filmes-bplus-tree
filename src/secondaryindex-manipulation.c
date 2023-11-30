@@ -57,6 +57,9 @@ void carregaSecundario(){
     }
 
     ordenaSecundario(numeroFilmes);
+
+    fclose(fp);
+    fclose(dadosp);
 }
 
 /* Refaz indice secundário a partir do arquivo de dados*/
@@ -93,12 +96,12 @@ int insereIndiceSecundario(Filme *novoFilme){
 
     if(!novovetorTitulos){ //verificando se a memória foi realocada
         printf("Erro ao alocar memória");
-        
         return -1;
     }
 
     vetorTitulos = novovetorTitulos;
 
+    // adiciona novo filme na última posição
     strcpy(vetorTitulos[numeroFilmes - 1].titulo, novoFilme->tituloOriginal);
     strcpy(vetorTitulos[numeroFilmes - 1].chavePrimaria, novoFilme->chavePrimaria);
 

@@ -144,7 +144,7 @@ void busca(){
                 }
             }
 
-            if(i == encontrado->numChaves){ // não achou no nó
+            if(i == encontrado->numChaves){ // não achou chave
                 printf("Não foi encontrado um filme de ID %s\n", idaux);
                 break;
             }
@@ -211,7 +211,7 @@ void listarFilmes(){
         break;
     
     case 2:
-        buscaRange("AAA00", "ZZZ99");
+        buscaRange("AAA00", "ZZZ99"); // menor e maior chave possíveis
 
         break;
 

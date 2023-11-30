@@ -46,6 +46,8 @@ int insereArquivoDados(Filme *novoFilme){
 
     long auxRRN = ftell(dadosp) - TAM_REGISTRO; //posição onde inseriu
 
+    fclose(dadosp);
+
     return auxRRN; 
 }
 
@@ -57,6 +59,7 @@ Filme *leFilmeChavePrimaria(long RRN){
 
     if(! fp){
         perror("Erro ao abrir o arquivo");
+        return NULL;
     }
 
     fseek(fp, RRN, SEEK_SET);
@@ -90,6 +93,10 @@ int alteraRegistro(char novaNota, char *idFilme){
         }
     }
 
+    if(i == encontrado->numChaves){ // não encontrou
+        return 0;
+    }
+
     fseek(dadosp, encontrado->dadosRRN[i], SEEK_SET); //posiciona ponteiro
 
     char buffer[TAM_REGISTRO + 1], tituloaux[MAX_NOME + 1], tituloportaux[MAX_NOME + 1], diretoraux[MAX_NOME + 1], anoaux[5], paisaux[MAX_NOME + 1]; //strings auxiliares para leitura de campos
@@ -108,6 +115,8 @@ int alteraRegistro(char novaNota, char *idFilme){
 
     fputc(novaNota, dadosp); //atualiza a nota
 
+    fclose(dadosp);
+
     return 1;
 }
 
@@ -116,6 +125,7 @@ void sair(){
     FILE *primario = fopen(NOME_INDICE_PRIMARIO, "rb+");
 
     fprintf(primario, "%020ld\n", raiz->RRN); 
+    fclose(primario);
 
     atualizaIndice();
 
@@ -133,4 +143,6 @@ void atualizaIndice(){
     for(i = 0; i < numeroFilmes; i++){ //para cada registro, imprime os campos de chave primária e RRN
         fprintf(secundario, "%s@%s\n", vetorTitulos[i].titulo, vetorTitulos[i].chavePrimaria);
     }  
+
+    fclose(secundario);
 }
